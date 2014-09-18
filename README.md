@@ -1,4 +1,4 @@
 auckbot_sim
 ===========
 
-SImulation of the AuckBot
+Simulation of the AuckBot
