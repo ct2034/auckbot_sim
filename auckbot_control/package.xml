@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package>
+  <name>auckbot_control</name>
+  <version>0.0.0</version>
+  <description>The auckbot_control package</description>
+
+  <maintainer email="post@henkelchristian.de">Christian Henkel</maintainer>
+
+  <license>BSD</license>
+
+  <author email="post@henkelchristian.de">Christian Henkel</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>controller_manager</run_depend>
+
+  <export>
+  </export>
+</package>

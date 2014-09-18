@@ -1,0 +1,19 @@
+<package>
+  <name>auckbot_gazebo</name>
+  <version>0.1.0</version>
+  <description>auckbot_gazebo</description>
+  <maintainer email="post@henkelchristian.de">Christian Henkel</maintainer>
+
+  <license>BSD</license>
+
+  <author email="post@henkelchristian.de">Christian Henkel</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <run_depend>auckbot_description</run_depend>
+  <run_depend>auckbot_control</run_depend> 
+  <run_depend>gazebo_ros</run_depend> 
+
+  <export>
+  </export>
+</package>
