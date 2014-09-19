@@ -18,7 +18,7 @@
   <xacro:include filename="$(find auckbot_description)/urdf/materials.xacro" />
 
   <!-- Base ....................................................................... -->
-  <link name="base">
+  <link name="base_link">
     <collision>
       <origin xyz="0 0 ${base_height/2-base_ground_clearance}" rpy="0 0 0"/>
       <geometry>
@@ -50,13 +50,13 @@
       <odometryTopic>odom</odometryTopic>
       <odometryFrame>odom</odometryFrame>
       <odometryRate>20.0</odometryRate>
-      <robotBaseFrame>base</robotBaseFrame>
+      <robotBaseFrame>base_link</robotBaseFrame>
     </plugin>
   </gazebo>
   
   
   <!-- Kinect ....................................................................... -->
-  <link name="kinect">
+  <link name="kinect_link">
     <collision>
       <origin xyz="0 0 0" rpy="0 0 0"/>
       <geometry>
@@ -90,14 +90,14 @@
   <joint name="kinect_joint" type="fixed">
     <axis xyz="0 1 0" />
     <origin xyz="${base_length/2} 0 ${base_height}" rpy="0 0 0"/>
-    <parent link="base"/>
-    <child link="kinect"/>
+    <parent link="base_link"/>
+    <child link="kinect_link"/>
   </joint>
   
-  <gazebo reference="kinect"> 
+  <gazebo reference="kinect_link"> 
     <sensor name="kinect" type="depth"> 
     <always_on>true</always_on>
-    <update_rate>20.0</update_rate>
+    <update_rate>10.0</update_rate>
     <camera>
       <horizontal_fov>${62.0*PI/180.0}</horizontal_fov>
       <image>
