@@ -5,6 +5,7 @@ project(auckbot_teleop)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
+  roscpp
 )
 
 ## System dependencies are found with CMake's conventions
@@ -79,7 +80,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES auckbot_teleop
-#  CATKIN_DEPENDS turtlebot_teleop
+   CATKIN_DEPENDS roscpp
 #  DEPENDS system_lib
 )
 
@@ -100,16 +101,16 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-# add_executable(auckbot_teleop_node src/auckbot_teleop_node.cpp)
+add_executable(auckbot_teleop_node src/keyboard_teleop.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(auckbot_teleop_node auckbot_teleop_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(auckbot_teleop_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(auckbot_teleop_node
+   ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
