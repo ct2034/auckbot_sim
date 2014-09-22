@@ -81,7 +81,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES auckbot_teleop
    CATKIN_DEPENDS roscpp
-#  DEPENDS system_lib
+   DEPENDS ncurses
 )
 
 ###########
@@ -108,8 +108,10 @@ add_executable(auckbot_teleop_node src/keyboard_teleop.cpp)
 # add_dependencies(auckbot_teleop_node auckbot_teleop_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(auckbot_teleop_node
-   ${catkin_LIBRARIES}
+target_link_libraries(
+  auckbot_teleop_node
+  ${catkin_LIBRARIES}
+  ncurses
 )
 
 #############

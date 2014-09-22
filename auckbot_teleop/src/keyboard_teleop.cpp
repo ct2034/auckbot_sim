@@ -5,21 +5,25 @@
    *   Christian Henkel                           *
    *   post@henkelchristian.de                    *
    ************************************************/
+
+#include <ncurses.h>
    
 #include <ros/ros.h>  
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/Vector3Stamped.h>
 
-#define NO_INPUT 0 // TODO: find out actual values
-#define SHIFT_Q  1
-#define SHIFT_W  2
-#define SHIFT_E  3
-#define SHIFT_A  4
-#define SHIFT_S  5
-#define SHIFT_D  6
-#define SHIFT    7
+#define NO_INPUT -1 // TODO: find out actual values
+#define SHIFT_Q  81
+#define SHIFT_W  87
+#define SHIFT_E  69
+#define SHIFT_A  65
+#define SHIFT_S  83
+#define SHIFT_D  68
+#define SHIFT    42
+#define CTRL_C   3
 
-#define LOOP_RATE 100
+
+#define LOOP_RATE 1000
 #define ZERO_THRD .1
 
 
@@ -39,7 +43,14 @@ int main(int argc, char** argv)
 	speedPub = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
 	ros::Rate loop_rate(LOOP_RATE);
 	
+	initscr();
+	raw();
+	keypad(stdscr, TRUE);
+	noecho(); // Switching off echoing using ncurses
+			
 	char input = NO_INPUT; 
+	
+	int row, col;
 	
 	float max_sp_lin = 1; // TODO read from launchfile
 	float max_sp_rot = 1; // TODO read from launchfile
@@ -48,18 +59,31 @@ int main(int argc, char** argv)
 	float sp_x = 0;
 	float sp_y = 0;
 	float sp_th = 0;
+	
+	char mesg[]="Use SHIFT + W,A,S,D to move, Q,E to turn";
+	char mesg2[]="any other key to STOP";
+	getmaxyx(stdscr,row,col);
+  mvprintw(row/2,   (col-40)/2, "%s", mesg );
+  mvprintw(row/2+1, (col-21)/2, "%s", mesg2);
 
-  while(1) // TODO: checkh weather roscore running
+	
+	ROS_INFO(".. started and initialized");
+
+		
+  while( ros::master::check() & input != CTRL_C )
   {
-    input = 0; //TODO Check for input
-      
+    input = getch();
+    //printw("%d, %c\n", input, input);
+    //refresh();
+    //cbreak();
+          
     switch(input){
-      case (NO_INPUT):
+      /*case (NO_INPUT):
         sp_x = 0;
         sp_y = 0;
         sp_th = 0;
         stop();
-      break;
+      break;*/
       case (SHIFT_Q):
         sp_x  = stop_traj(grad, sp_x);
         sp_y  = stop_traj(grad, sp_y);
@@ -77,7 +101,7 @@ int main(int argc, char** argv)
       break;
       case (SHIFT_A):
         sp_x  = stop_traj(grad, sp_x);
-        sp_y  = acc_traj(grad, sp_y, -1*max_sp_lin);
+        sp_y  = acc_traj(grad, sp_y, max_sp_lin);
         sp_th = stop_traj(grad, sp_th);
       break;
       case (SHIFT_S):
@@ -87,10 +111,10 @@ int main(int argc, char** argv)
       break;
       case (SHIFT_D):
         sp_x  = stop_traj(grad, sp_x);
-        sp_y  = acc_traj(grad, sp_y, max_sp_lin);
+        sp_y  = acc_traj(grad, sp_y, -1*max_sp_lin);
         sp_th = stop_traj(grad, sp_th);
       break;
-      case (SHIFT):
+      default:
         sp_x  = stop_traj(grad, sp_x);
         sp_y  = stop_traj(grad, sp_y);
         sp_th = stop_traj(grad, sp_th);
@@ -99,24 +123,24 @@ int main(int argc, char** argv)
     
     set_speed(sp_x, sp_y, sp_th);
   
-    loop_rate.sleep();
+    //loop_rate.sleep();
     ros::spinOnce();
   }
   
   stop();
+  endwin();
 
+	ROS_INFO("STOPPING NODE");
   return 0;
 }
 
 bool stop(){
-  geometry_msgs::Vector3Stamped cmd_robot;
   geometry_msgs::Twist msg;
   
-  cmd_robot.vector.x = 0.0;
-  cmd_robot.vector.y = 0.0;
+  msg.linear.x = 0.0;
+  msg.linear.y = 0.0;
   msg.angular.z = 0.0;
   
-  msg.linear = cmd_robot.vector;
   msg.linear.z = 0.0; msg.angular.x = 0.0; msg.angular.y = 0.0;
   
   speedPub.publish(msg);
@@ -125,14 +149,12 @@ bool stop(){
 }
 
 bool set_speed(float _x, float _y, float _th){
-  geometry_msgs::Vector3Stamped cmd_robot;
   geometry_msgs::Twist msg;
   
-  cmd_robot.vector.x = _x;
-  cmd_robot.vector.y = _y;
+  msg.linear.x = _x;
+  msg.linear.y = _y;
   msg.angular.z = _th;
   
-  msg.linear = cmd_robot.vector;
   msg.linear.z = 0.0; msg.angular.x = 0.0; msg.angular.y = 0.0;
   
   speedPub.publish(msg);
