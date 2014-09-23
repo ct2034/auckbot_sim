@@ -1,12 +1,8 @@
 <launch>
-   
-   <!-- RGB-D MAPPING VERSION -->
-   <!-- WARNING : Database is automatically deleted on each startup -->
-   <!--           See "delete_db_on_start" option below... -->
-  
+  <!-- RGB-D MAPPING VERSION -->
   <!-- TF FRAMES -->
   <node pkg="tf" type="static_transform_publisher" name="base_to_camera_tf" 
-    args="0.6 0.0 0.39 0.0 0.0 0.0 /base_link /kinect_link 100" />
+    args="0.6 0.0 0.39 -1.5707 0.0 -1.5707 /base_link /kinect_link 100" />
      
   <group ns="rtabmap">
   
@@ -34,6 +30,7 @@
       <remap from="odom" to="odom"/>
       	
       <param name="queue_size" type="int" value="30"/>
+      <param name="Rtabmap/DatabasePath" type="string" value="$(find auckbot_navigation)/data/mudcircle.db"/>  <!-- Database saved for localization -->
     </node>
   
     <!-- Visualisation (client side) -->
