@@ -36,8 +36,9 @@
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
   <run_depend>rtabmap</run_depend>
-  <run_depend>turtlebot_navigation</run_depend>   <!-- In fact this should be replaced by move_base and so on .. -->
   <run_depend>tf</run_depend>
+  <run_depend>turtlebot_navigation</run_depend>   <!-- In fact this should be replaced by move_base and so on .. -->
+  <run_depend>depthimage_to_laserscan</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
