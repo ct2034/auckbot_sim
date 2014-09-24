@@ -11,7 +11,7 @@ This packages contain the Simulation of the AuckBot. In particular:
 
 ## Tutorial
 
-To use this software, follow this steps:</br>
+To use this software, follow this steps:<br/>
 (It is recommended to have look at some [tutorials](http://wiki.ros.org/ROS/Tutorials) if you are new to ROS)
 
 1. Create a ROS workspace
