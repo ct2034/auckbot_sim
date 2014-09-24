@@ -1,4 +1,4 @@
-auckbot_sim
+The Auckbot Simulation
 ===========
 
 This packages contain the Simulation of the AuckBot. In particular:
@@ -11,9 +11,18 @@ This packages contain the Simulation of the AuckBot. In particular:
 
 ## Tutorial
 
-To use this software, follow this steps:<br/>
+To use this software, follow these steps:<br/>
 (It is recommended to have look at some [tutorials](http://wiki.ros.org/ROS/Tutorials) if you are new to ROS)
 
 1. Create a ROS workspace
   - `mkdir -p ~/ros/auckbot_ws/src`
+  - `cd ~/ros/auckbot_ws/src`
+  - `catkin_init_workspace`
+  
+2. Download this source
+  - `git clone git@github.com:ct2034/auckbot_sim.git`
+  
+3. Build the code
   - `cd ~/ros/auckbot_ws`
+  - `catkin_make`
+
