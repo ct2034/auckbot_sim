@@ -9,7 +9,7 @@ This packages contain the Simulation of the AuckBot. In particular:
 - __`auckbot_navigation`__: Navigation launchfiles and maps (mainly wrappers of available packages)
 - __`auckbot_teleop`__: Little tool to manually control the robot
 
-## Tutorial
+## Building
 
 To use this software, follow these steps:<br/>
 (It is recommended to have look at some [tutorials](http://wiki.ros.org/ROS/Tutorials) if you are new to ROS)
@@ -33,3 +33,14 @@ To use this software, follow these steps:<br/>
     *No rule to make target /usr/lib/x86_64-linux-gnu/libGL.so*<br/>
     create a link to the correct location of the library `sudo ln -s /usr/lib/libGL.so /usr/lib/x86_64-linux-gnu/libGL.so`
     - The folders rtabmaplib and rtabmap should both be located in the src folder of your workspace
+    
+## Running
+
+You will need probably *(at least)* 3 terminal windows:
+- To start the simulation run `roslaunch auckbot_gazebo auckbot_mudcircle.launch`. *Note that the UI of gazebo is switched off by default. Edit the launchfile to change this.* <br/>
+- The basic navigation can be started with `roslaunch auckbot_navigation amcl_move_base.launch`. <br/>
+- A preconfigured version of rviz can be started with `roslaunch auckbot_navigation rviz.launch`. In rviz you can know set navigation goals which will initiate the movement of the robot towards these.<br/>
+
+
+
+
