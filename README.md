@@ -25,6 +25,7 @@ To use this software, follow these steps:<br/>
 3. Build the code
   - `cd ~/ros/auckbot_ws`
   - `catkin_make`
+  - `source devel/setup.bash`
 
 4. (OPTIONAL) If you want to use rtabmap:
   - Get the code and compile it according to the available [tutorial](https://code.google.com/p/rtabmap/wiki/Installation#ROS_version)
