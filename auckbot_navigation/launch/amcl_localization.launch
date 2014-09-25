@@ -19,8 +19,13 @@
 	<include file="$(find auckbot_navigation)/launch/amcl_node.xml" />
 	
 	<!--- Run move base -->
-	<!--include file="$(find cob_navigation_global)/launch/2dnav_ros_eband.xml" >
-		<arg name="robot" value="$(arg robot)"/>
-	</include-->
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <rosparam file="$(find auckbot_navigation)/param/costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="$(find auckbot_navigation)/param/costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="$(find auckbot_navigation)/param/local_costmap_params.yaml" command="load" />
+    <rosparam file="$(find auckbot_navigation)/param/global_costmap_params.yaml" command="load" />
+    <rosparam file="$(find auckbot_navigation)/param/base_local_planner_params.yaml" command="load" />
+    <rosparam file="$(find auckbot_navigation)/param/move_base_params.yaml" command="load" />
+  </node>
 
 </launch>
