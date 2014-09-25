@@ -29,6 +29,6 @@ To use this software, follow these steps:<br/>
 4. (OPTIONAL) If you want to use rtabmap:
   - Get the code and compile it according to the available [tutorial](https://code.google.com/p/rtabmap/wiki/Installation#ROS_version)
   - Notes:
-    - In case you experience an error like 
-    > No rule to make target /usr/lib/x86_64-linux-gnu/libGL.so"
-    - create a link to the correct location of the library `sudo ln -s /usr/lib/libGL.so /usr/lib/x86_64-linux-gnu/libGL.so`
+    - In case you experience an error like <br/>
+    > No rule to make target /usr/lib/x86_64-linux-gnu/libGL.so"<br/>
+    create a link to the correct location of the library `sudo ln -s /usr/lib/libGL.so /usr/lib/x86_64-linux-gnu/libGL.so`
