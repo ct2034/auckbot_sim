@@ -32,7 +32,8 @@ To use this software, follow these steps:<br/>
   - Notes:
     - In case you experience an error like <br/>
     *No rule to make target /usr/lib/x86_64-linux-gnu/libGL.so*<br/>
-    create a link to the correct location of the library `sudo ln -s /usr/lib/libGL.so /usr/lib/x86_64-linux-gnu/libGL.so`
+    create a link to the correct location of the library:<br/>
+    `sudo ln -s /usr/lib/libGL.so /usr/lib/x86_64-linux-gnu/libGL.so`
     - The folders rtabmaplib and rtabmap should both be located in the src folder of your workspace
     
 ## Running
