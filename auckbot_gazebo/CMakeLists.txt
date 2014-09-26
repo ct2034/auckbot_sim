@@ -1,18 +1,36 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(auckbot_gazebo)
-# Load catkin and all dependencies required for this package
-# TODO: remove all from COMPONENTS that are not catkin packages.
-find_package(catkin REQUIRED COMPONENTS gazebo_ros)
 
+find_package(catkin REQUIRED COMPONENTS
+  gazebo_ros
+  roscpp
+  message_generation
+)
 
-# TODO: fill in what other packages will need to use this package
+add_message_files(
+  FILES
+  MotorCurrents.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
 ## DEPENDS: system dependencies of this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## INCLUDE_DIRS: 
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 catkin_package(
-    DEPENDS 
-    CATKIN_DEPENDS # TODO
-    INCLUDE_DIRS # TODO include
-    LIBRARIES # TODO
+#  INCLUDE_DIRS include
+#  LIBRARIES auckbot_teleop
+   CATKIN_DEPENDS roscpp message_runtime
+#  DEPENDS ncurses
+)
+
+add_executable(current_pub src/current_pub.cpp)
+
+target_link_libraries(
+  current_pub
+  ${catkin_LIBRARIES}
 )
