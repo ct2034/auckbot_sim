@@ -7,6 +7,7 @@ class CurrentPub
   private:
     float speed;
     ros::Publisher publisher;
+    ros::Time timeLast;
  
   public:
     CurrentPub();
@@ -23,15 +24,23 @@ CurrentPub::CurrentPub()
   
 void CurrentPub::velocityCallback(const geometry_msgs::Twist& speedMsg)
 {
-  ROS_INFO("I heard x-speed = %f", speedMsg.linear.x);
+  float secDuration;
+  ros::Time _now;
+  
+  _now = ros::Time::now();
+  secDuration = _now.toSec() - timeLast.toSec();
+    
+  ROS_INFO("I heard x-speed = %f, Duration: %f s", speedMsg.linear.x, secDuration);
   
   auckbot_gazebo::MotorCurrents msg;
+  msg.time = _now;
   msg.current1 = 0.0;
   msg.current2 = 0.0;
   msg.current3 = 0.0;
   msg.current4 = 0.0;
   
   publisher.publish(msg);
+  timeLast = _now;
 }
 
 void CurrentPub::setPub(ros::Publisher publisher_)
