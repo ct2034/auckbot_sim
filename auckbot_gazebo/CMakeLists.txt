@@ -25,7 +25,7 @@ catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES auckbot_teleop
    CATKIN_DEPENDS roscpp message_runtime
-#  DEPENDS ncurses
+   DEPENDS eigen
 )
 
 add_executable(current_pub src/current_pub.cpp)

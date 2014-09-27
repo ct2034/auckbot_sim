@@ -25,7 +25,7 @@
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
 	args="-urdf -model auckbot -param robot_description"/>
 
-  <!-- ros_control auckbot launch file -->
-  <!--include file="$(find auckbot_control)/launch/auckbot_control.launch" /-->
+  <!-- current simulation -->
+  <node name="current_pub" pkg="auckbot_gazebo" type="current_pub"/>
 
 </launch>
