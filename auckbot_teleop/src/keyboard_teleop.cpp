@@ -60,8 +60,8 @@ int main(int argc, char** argv)
 	
 	int row, col;
 	
-	float max_sp_lin = .5; // TODO read from launchfile
-	float max_sp_rot = .5; // TODO read from launchfile
+	float max_sp_lin = 500; // TODO read from launchfile
+	float max_sp_rot = 200; // TODO read from launchfile
 	float grad = .3; // TODO read from launchfile
 	
 	float sp_x = 0;
