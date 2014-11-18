@@ -16,6 +16,7 @@ You should have received a copy of the GNU General Public License along with Auc
  
 #include <ros/ros.h>  
 #include <geometry_msgs/Twist.h>
+#include <geometry_msgs/Vector3.h>
 #include <geometry_msgs/Vector3Stamped.h>
 
 #include "move_base_msgs/MoveBaseActionResult.h"
@@ -24,29 +25,40 @@ You should have received a copy of the GNU General Public License along with Auc
 #include <tf/transform_listener.h>
 
 #define TIME 1
+#define THD 0.001
 
 class NavAnalysis 
 {
   private:
     float length;
     ros::Time timeLast;
+    geometry_msgs::Vector3 oldPoint;
  
   public:
+  //constructors
     NavAnalysis();
+  //setter/getter
     void addLength(float in);
     float getLength();
     void resetLength();
-    
-  private:
-    void setCurrents(float* speeds, float duration);
+    void addPoint(tf::StampedTransform transform);
+    void setOldPoint(tf::Vector3& point);
+  //callbacks  
+    void resultCallback(const move_base_msgs::MoveBaseActionResult msg);
+    void goalCallback(const move_base_msgs::MoveBaseActionGoal msg);
 };
 
 // class functions
+//constructors
 NavAnalysis::NavAnalysis()
 {
   length = 0;
+  oldPoint.x = 0;
+  oldPoint.y = 0;
+  oldPoint.z = 0;
 }
 
+//setter/getter
 void NavAnalysis::addLength(float in)
 {
   length += in;
@@ -62,21 +74,41 @@ void NavAnalysis::resetLength()
   length = 0;
 }
 
-// callbacks
-void resultCallback(const move_base_msgs::MoveBaseActionResult msg)
+void NavAnalysis::addPoint(tf::StampedTransform transform)
 {
-  ROS_INFO("Reached goal. Length was: %f\n", 0.0);
+  float dist = sqrt( pow(transform.getOrigin().x() - oldPoint.x, 2) +
+                     pow(transform.getOrigin().y() - oldPoint.y, 2) );
+  if (dist>THD) 
+  {
+    ROS_INFO("New Point: %f, %f, d: %f", transform.getOrigin().x(), transform.getOrigin().y(), dist);
+    this->addLength(dist);
+    this->setOldPoint(transform.getOrigin());
+  }
 }
 
-void goalCallback(const move_base_msgs::MoveBaseActionGoal msg)
+void NavAnalysis::setOldPoint(tf::Vector3& point)
 {
-  ROS_INFO("I heard a goal message\n");
+  oldPoint.x = point.x();
+  oldPoint.y = point.y();
+  oldPoint.z = point.z();
+}
+
+// callbacks
+void NavAnalysis::resultCallback(const move_base_msgs::MoveBaseActionResult msg)
+{
+  ROS_INFO("Reached goal. Length was: %f", this->getLength());
+}
+
+void NavAnalysis::goalCallback(const move_base_msgs::MoveBaseActionGoal msg)
+{
+  ROS_INFO("I heard a goal message");
+  this->resetLength();
 }
 
 int main(int argc, char** argv)
 {
-  char* frame1 = "/base_link";
-  char* frame2 = "/map";
+  char* map_frame = "/map";
+  char* robot_frame = "/base_link";
   // TODO: get frames from params 
 
 
@@ -84,26 +116,27 @@ int main(int argc, char** argv)
 	ros::init(argc, argv, "nav_analysis");
   ros::NodeHandle nh;
   ros::Rate rate(TIME);
+  NavAnalysis na = NavAnalysis();
 	
-	ros::Subscriber resultSub = nh.subscribe("/move_base/result", 1000, resultCallback);
- 	ros::Subscriber goalSub = nh.subscribe("/move_base/goal", 1000, goalCallback);
+	ros::Subscriber resultSub = nh.subscribe("/move_base/result", \
+	  1000, &NavAnalysis::resultCallback, &na);
+ 	ros::Subscriber goalSub = nh.subscribe("/move_base/goal", \
+ 	  1000, &NavAnalysis::goalCallback, &na);
   tf::TransformListener listener;
   
-  NavAnalysis na = NavAnalysis();
-  
-  ROS_INFO("Waiting for transformation from '%s' to '%s'", frame1, frame2);
-  listener.waitForTransform(frame1, frame2, ros::Time::now(), ros::Duration(60.0));
+  ROS_INFO("Waiting for transformation from '%s' to '%s'", map_frame, robot_frame);
+  listener.waitForTransform(map_frame, robot_frame, ros::Time::now(), ros::Duration(60.0));
   
   while (nh.ok()){
     tf::StampedTransform transform;
     try{
-      listener.lookupTransform(frame1, frame2, ros::Time(0), transform);
+      listener.lookupTransform(map_frame, robot_frame, ros::Time(0), transform);
     }
     catch (tf::TransformException ex){
       ROS_INFO("%s",ex.what());
     }
     
-    na.addLength(0.1);
+    na.addPoint(transform);
     
     ros::spinOnce();
     rate.sleep();
