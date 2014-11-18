@@ -5,7 +5,9 @@ project(auckbot_navigation)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS
-  )
+  roscpp
+  move_base_msgs
+)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -79,7 +81,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES auckbot_navigation
-#  CATKIN_DEPENDS rtabmap
+   CATKIN_DEPENDS roscpp
 #  DEPENDS system_lib
 )
 
@@ -100,16 +102,16 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-# add_executable(auckbot_navigation_node src/auckbot_navigation_node.cpp)
+add_executable(nav_analysis src/nav_analysis.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(auckbot_navigation_node auckbot_navigation_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(auckbot_navigation_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(nav_analysis
+  ${catkin_LIBRARIES}
+)
 
 #############
 ## Install ##
