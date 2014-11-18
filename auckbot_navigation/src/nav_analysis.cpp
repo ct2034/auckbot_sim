@@ -19,20 +19,54 @@ You should have received a copy of the GNU General Public License along with Auc
 #include <geometry_msgs/Vector3Stamped.h>
 
 #include "move_base_msgs/MoveBaseActionResult.h"
-//#include "move_base_msgs/GoalStatusArray.h"
 #include "move_base_msgs/MoveBaseActionGoal.h"
 
-void resultCallback(const move_base_msgs::MoveBaseActionResult msg)
+#include <tf/transform_listener.h>
+
+#define TIME 1
+
+class NavAnalysis 
 {
-  ROS_INFO("I heard a result message\n");
+  private:
+    float length;
+    ros::Time timeLast;
+ 
+  public:
+    NavAnalysis();
+    void addLength(float in);
+    float getLength();
+    void resetLength();
+    
+  private:
+    void setCurrents(float* speeds, float duration);
+};
+
+// class functions
+NavAnalysis::NavAnalysis()
+{
+  length = 0;
 }
 
+void NavAnalysis::addLength(float in)
+{
+  length += in;
+}
 
-//void statusCallback(const move_base_msgs::GoalStatusArray msg)
-//{
-//  ROS_INFO("I heard a status message\n");
-//}
+float NavAnalysis::getLength()
+{
+  return length;
+}
 
+void NavAnalysis::resetLength()
+{
+  length = 0;
+}
+
+// callbacks
+void resultCallback(const move_base_msgs::MoveBaseActionResult msg)
+{
+  ROS_INFO("Reached goal. Length was: %f\n", 0.0);
+}
 
 void goalCallback(const move_base_msgs::MoveBaseActionGoal msg)
 {
@@ -41,14 +75,39 @@ void goalCallback(const move_base_msgs::MoveBaseActionGoal msg)
 
 int main(int argc, char** argv)
 {
+  char* frame1 = "/base_link";
+  char* frame2 = "/map";
+  // TODO: get frames from params 
+
+
 	ROS_INFO("Starting node...");
 	ros::init(argc, argv, "nav_analysis");
-	ros::NodeHandle nh;
+  ros::NodeHandle nh;
+  ros::Rate rate(TIME);
+	
 	ros::Subscriber resultSub = nh.subscribe("/move_base/result", 1000, resultCallback);
- 	//ros::Subscriber statusSub = nh.subscribe("/move_base/status", 1000, statusCallback);
  	ros::Subscriber goalSub = nh.subscribe("/move_base/goal", 1000, goalCallback);
+  tf::TransformListener listener;
   
-  ros::spin();
+  NavAnalysis na = NavAnalysis();
+  
+  ROS_INFO("Waiting for transformation from '%s' to '%s'", frame1, frame2);
+  listener.waitForTransform(frame1, frame2, ros::Time::now(), ros::Duration(60.0));
+  
+  while (nh.ok()){
+    tf::StampedTransform transform;
+    try{
+      listener.lookupTransform(frame1, frame2, ros::Time(0), transform);
+    }
+    catch (tf::TransformException ex){
+      ROS_INFO("%s",ex.what());
+    }
+    
+    na.addLength(0.1);
+    
+    ros::spinOnce();
+    rate.sleep();
+  }
 
 	ROS_INFO("STOPPING NODE");
   return 0;
