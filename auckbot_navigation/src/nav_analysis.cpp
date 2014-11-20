@@ -21,14 +21,18 @@ You should have received a copy of the GNU General Public License along with Auc
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/Vector3.h>
 #include <geometry_msgs/Vector3Stamped.h>
+#include <geometry_msgs/Pose.h>
 
 #include <move_base_msgs/MoveBaseActionResult.h>
 #include <move_base_msgs/MoveBaseActionGoal.h>
+
+#include <auckbot_gazebo/MotorCurrents.h>
 
 #include <tf/transform_listener.h>
 
 #define TIME 1
 #define THD 0.0001
+#define PI 3.14159265359
 
 class Metric {
   private:
@@ -62,15 +66,16 @@ void Metric::toString(char* message) {
 class metricListener {
   private:
     ros::Time timeLast;
-    geometry_msgs::Vector3 oldPoint;
-    Metric lengthMetric;
+    tf::Transform oldPose;
+    Metric metrics[2];
  
   public:
   //constructors
     metricListener();
   //setter / getter
     void addPoint(tf::StampedTransform transform);
-    void setOldPoint(tf::Vector3& point);
+    void setOldPose(tf::StampedTransform transform){ \
+      oldPose = tf::StampedTransform( transform ); }
   //callbacks  
     void resultCallback(const move_base_msgs::MoveBaseActionResult msg);
     void goalCallback(const move_base_msgs::MoveBaseActionGoal msg);
@@ -79,39 +84,45 @@ class metricListener {
 // class functions
 //constructors
 metricListener::metricListener() {
-  lengthMetric = Metric((char*) "Length", (char*) "The total length of the route");
-  oldPoint.x = 0;
-  oldPoint.y = 0;
-  oldPoint.z = 0;
+  metrics[0] = Metric((char*) "Length", \
+    (char*) "The total length of the route");
+  metrics[1] = Metric((char*) "Rotation", \
+    (char*) "The total rotation along the route");
+  oldPose = tf::Transform();
 }
 
 void metricListener::addPoint(tf::StampedTransform transform) {
-  float dist = sqrt( pow(transform.getOrigin().x() - oldPoint.x, 2) +
-                     pow(transform.getOrigin().y() - oldPoint.y, 2) );
+  float dist = sqrt( pow(transform.getOrigin().x() - oldPose.getOrigin().x(), 2) +
+                     pow(transform.getOrigin().y() - oldPose.getOrigin().y(), 2) );
+  double roll, pitch, yaw;
+  float rot = fabs( getYaw(transform.getRotation()) - getYaw(oldPose.getRotation()) );
+  if (rot > PI) rot -= 2 * PI;
+  rot = fabs(rot);
+
   if (dist>THD) 
   {
-    //ROS_INFO("New point: %f, %f, d: %f", \
-      transform.getOrigin().x(), transform.getOrigin().y(), dist);
-    lengthMetric.addValue(dist);
-    this->setOldPoint(transform.getOrigin());
+    ROS_INFO("New point: %f, %f, %f\n d: %f, r: %f", \
+      transform.getOrigin().x(), transform.getOrigin().y(), \
+      getYaw(transform.getRotation()), dist, rot);
+    metrics[0].addValue(dist);
+    metrics[1].addValue(rot);
+    this->setOldPose(transform);
   }
 }
 
-void metricListener::setOldPoint(tf::Vector3& point) {
-  oldPoint.x = point.x();
-  oldPoint.y = point.y();
-  oldPoint.z = point.z();
-}
 // callbacks
 void metricListener::resultCallback(const move_base_msgs::MoveBaseActionResult msg) {
   char stringInfo[100];
-  lengthMetric.toString(stringInfo);
+  metrics[0].toString(stringInfo);
+  ROS_INFO(stringInfo);
+  metrics[1].toString(stringInfo);
   ROS_INFO(stringInfo);
 }
 
 void metricListener::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) {
   ROS_INFO("New route ..");
-  lengthMetric.resetValue();
+  metrics[0].resetValue();
+  metrics[1].resetValue();
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -120,7 +131,7 @@ int main(int argc, char** argv) {
   char* map_frame ((char*) "/map");
   char* robot_frame ((char*) "/base_link");
   // TODO: get frames from params 
-
+ 
 	ROS_INFO("Starting node...");
 	ros::init(argc, argv, "nav_analysis");
   ros::NodeHandle nh;
