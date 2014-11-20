@@ -16,7 +16,8 @@ You should have received a copy of the GNU General Public License along with Auc
  
 #include <string>
 
-#include <ros/ros.h>  
+#include <ros/ros.h> 
+#include <ros/time.h>  
 
 #include <geometry_msgs/Twist.h>
 #include <geometry_msgs/Vector3.h>
@@ -30,30 +31,39 @@ You should have received a copy of the GNU General Public License along with Auc
 
 #include <tf/transform_listener.h>
 
-#define TIME 1
-#define THD 0.0001
-#define PI 3.14159265359
+#define TIME      1
+#define THD       0.0001
+#define PI        3.14159265359
+#define NSECPSEC  1 000 000 000
 
 class Metric {
   private:
-    char name[10];
+    char name[20];
     char description[120];
     float value;
+    ros::Time timeLast;
     
   public:
     Metric() {}
     Metric(char* _name, char* _description);
     void toString(char*);
     float getValue(){ return value; }
-    void resetValue(){ value = 0; }
+    void resetValueAndTime();
     void addValue(float _val){ value += _val; }
+    float passedTime(ros::Time now);
 };
 
 Metric::Metric(char* _name, char* _description) {
   strcpy(name, _name);
   strcpy(description, _description);
-  resetValue();
+  resetValueAndTime();
 }
+
+void Metric::resetValueAndTime(){
+  value = 0;
+  timeLast = ros::Time::now();
+}
+
     
 void Metric::toString(char* message) {
   sprintf(message, "Metric '%s': >%s<.\nValue: %f", name, \
@@ -61,13 +71,19 @@ void Metric::toString(char* message) {
   return;
 }
 
+// Returns the time that passed since this was called the last time. (in seconds)
+float Metric::passedTime(ros::Time now) {
+  float sec = now.toSec() - timeLast.toSec();
+  timeLast = ros::Time( now );
+  return sec;
+}
+
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 class metricListener {
   private:
-    ros::Time timeLast;
     tf::Transform oldPose;
-    Metric metrics[2];
+    Metric metrics[3];
  
   public:
   //constructors
@@ -79,15 +95,18 @@ class metricListener {
   //callbacks  
     void resultCallback(const move_base_msgs::MoveBaseActionResult msg);
     void goalCallback(const move_base_msgs::MoveBaseActionGoal msg);
+    void currentsCallback(const auckbot_gazebo::MotorCurrents msg);
 };
 
 // class functions
 //constructors
 metricListener::metricListener() {
-  metrics[0] = Metric((char*) "Length", \
+  metrics[0] = Metric((char*) "Length [m]", \
     (char*) "The total length of the route");
-  metrics[1] = Metric((char*) "Rotation", \
+  metrics[1] = Metric((char*) "Rotation [rad]", \
     (char*) "The total rotation along the route");
+  metrics[2] = Metric((char*) "Current [As]", \
+    (char*) "Consumed motor current");
   oldPose = tf::Transform();
 }
 
@@ -112,17 +131,25 @@ void metricListener::addPoint(tf::StampedTransform transform) {
 
 // callbacks
 void metricListener::resultCallback(const move_base_msgs::MoveBaseActionResult msg) {
-  char stringInfo[100];
+  char stringInfo[200];
   metrics[0].toString(stringInfo);
   ROS_INFO(stringInfo);
   metrics[1].toString(stringInfo);
+  ROS_INFO(stringInfo);
+  metrics[2].toString(stringInfo);
   ROS_INFO(stringInfo);
 }
 
 void metricListener::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) {
   ROS_INFO("New route ..");
-  metrics[0].resetValue();
-  metrics[1].resetValue();
+  metrics[0].resetValueAndTime();
+  metrics[1].resetValueAndTime();
+  metrics[2].resetValueAndTime();
+}
+
+void metricListener::currentsCallback(const auckbot_gazebo::MotorCurrents msg) {
+  float currents = msg.current1 + msg.current2 + msg.current3 + msg.current4;
+  metrics[2].addValue( currents * metrics[2].passedTime(msg.time) );
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -140,8 +167,10 @@ int main(int argc, char** argv) {
 
 	ros::Subscriber resultSub = nh.subscribe("/move_base/result", \
 	  1000, &metricListener::resultCallback, &ml);
- 	ros::Subscriber goalSub = nh.subscribe("/move_base/goal", \
- 	  1000, &metricListener::goalCallback, &ml);
+  ros::Subscriber goalSub = nh.subscribe("/move_base/goal", \
+    1000, &metricListener::goalCallback, &ml);
+  ros::Subscriber currentSub = nh.subscribe("/current", \
+    1000, &metricListener::currentsCallback, &ml);
   tf::TransformListener listener;
   
   ROS_INFO("Waiting for transformation from '%s' to '%s'", \
