@@ -37,7 +37,7 @@ class Metric {
     float value;
     
   public:
-    Metric();
+    Metric() {}
     Metric(char* _name, char* _description);
     void toString(char*);
     float getValue(){ return value; }
@@ -54,20 +54,20 @@ Metric::Metric(char* _name, char* _description) {
 void Metric::toString(char* message) {
   sprintf(message, "Metric '%s': >%s<.\nValue: %f", name, \
     description, value);
-  //ROS_INFO(message);
   return;
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 
-class NavAnalysis: public Metric {
+
+class metricListener {
   private:
     ros::Time timeLast;
     geometry_msgs::Vector3 oldPoint;
+    Metric lengthMetric;
  
   public:
   //constructors
-    NavAnalysis(char* _name, char* _description);
+    metricListener();
   //setter / getter
     void addPoint(tf::StampedTransform transform);
     void setOldPoint(tf::Vector3& point);
@@ -78,59 +78,59 @@ class NavAnalysis: public Metric {
 
 // class functions
 //constructors
-NavAnalysis::NavAnalysis(char* _name, \
-  char* _description) : \
-  Metric::Metric(_name, _description)  {
-  resetValue();
+metricListener::metricListener() {
+  lengthMetric = Metric((char*) "Length", (char*) "The total length of the route");
   oldPoint.x = 0;
   oldPoint.y = 0;
   oldPoint.z = 0;
 }
 
-void NavAnalysis::addPoint(tf::StampedTransform transform) {
+void metricListener::addPoint(tf::StampedTransform transform) {
   float dist = sqrt( pow(transform.getOrigin().x() - oldPoint.x, 2) +
                      pow(transform.getOrigin().y() - oldPoint.y, 2) );
   if (dist>THD) 
   {
-    ROS_INFO("New point: %f, %f, d: %f", \
+    //ROS_INFO("New point: %f, %f, d: %f", \
       transform.getOrigin().x(), transform.getOrigin().y(), dist);
-    this->addValue(dist);
+    lengthMetric.addValue(dist);
     this->setOldPoint(transform.getOrigin());
   }
 }
 
-void NavAnalysis::setOldPoint(tf::Vector3& point) {
+void metricListener::setOldPoint(tf::Vector3& point) {
   oldPoint.x = point.x();
   oldPoint.y = point.y();
   oldPoint.z = point.z();
 }
 // callbacks
-void NavAnalysis::resultCallback(const move_base_msgs::MoveBaseActionResult msg) {
+void metricListener::resultCallback(const move_base_msgs::MoveBaseActionResult msg) {
   char stringInfo[100];
-  this->toString(stringInfo);
+  lengthMetric.toString(stringInfo);
   ROS_INFO(stringInfo);
 }
 
-void NavAnalysis::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) {
+void metricListener::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) {
   ROS_INFO("New route ..");
-  this->resetValue();
+  lengthMetric.resetValue();
 }
 
+// ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 int main(int argc, char** argv) {
-  char* map_frame ("/map");
-  char* robot_frame ("/base_link");
+  char* map_frame ((char*) "/map");
+  char* robot_frame ((char*) "/base_link");
   // TODO: get frames from params 
 
 	ROS_INFO("Starting node...");
 	ros::init(argc, argv, "nav_analysis");
   ros::NodeHandle nh;
   ros::Rate rate(TIME);
-  NavAnalysis lengthAna = NavAnalysis("Length", "The total length of the route");
-	
+	metricListener ml = metricListener();
+
 	ros::Subscriber resultSub = nh.subscribe("/move_base/result", \
-	  1000, &NavAnalysis::resultCallback, &lengthAna);
+	  1000, &metricListener::resultCallback, &ml);
  	ros::Subscriber goalSub = nh.subscribe("/move_base/goal", \
- 	  1000, &NavAnalysis::goalCallback, &lengthAna);
+ 	  1000, &metricListener::goalCallback, &ml);
   tf::TransformListener listener;
   
   ROS_INFO("Waiting for transformation from '%s' to '%s'", \
@@ -147,7 +147,7 @@ int main(int argc, char** argv) {
       ROS_INFO("%s",ex.what());
     }
     
-    lengthAna.addPoint(transform);
+    ml.addPoint(transform);
     
     ros::spinOnce();
     rate.sleep();
