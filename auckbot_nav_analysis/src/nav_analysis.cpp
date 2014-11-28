@@ -83,7 +83,7 @@ float Metric::passedTime(ros::Time now) {
 class metricListener {
   private:
     tf::Transform oldPose;
-    Metric metrics[3];
+    Metric metrics[4];
  
   public:
   //constructors
@@ -138,6 +138,9 @@ void metricListener::resultCallback(const move_base_msgs::MoveBaseActionResult m
   ROS_INFO(stringInfo);
   metrics[2].toString(stringInfo);
   ROS_INFO(stringInfo);
+  metrics[3].toString(stringInfo);
+  ROS_INFO(stringInfo);
+  metrics[3].~Metric();
 }
 
 void metricListener::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) {
@@ -145,6 +148,10 @@ void metricListener::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) 
   metrics[0].resetValueAndTime();
   metrics[1].resetValueAndTime();
   metrics[2].resetValueAndTime();
+  char params[100];
+  sprintf( params, "MB_USE_GRID_PATH: %s\nMB_USE_GRID_PATH: %s\n", \
+    getenv ("MB_BASE_GLOBAL_PLANNER"), getenv ("MB_USE_GRID_PATH"));
+  metrics[3] = Metric((char*) "Planner Parameters", params);
 }
 
 void metricListener::currentsCallback(const auckbot_gazebo::MotorCurrents msg) {
