@@ -120,7 +120,7 @@ void metricListener::addPoint(tf::StampedTransform transform) {
 
   if (dist>THD) 
   {
-    ROS_INFO("New point: %f, %f, %f\n d: %f, r: %f", \
+    //ROS_INFO("New point: %f, %f, %f\n d: %f, r: %f", \
       transform.getOrigin().x(), transform.getOrigin().y(), \
       getYaw(transform.getRotation()), dist, rot);
     metrics[0].addValue(dist);
@@ -154,18 +154,19 @@ void metricListener::currentsCallback(const auckbot_gazebo::MotorCurrents msg) {
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-int main(int argc, char** argv) {
-  char* map_frame ((char*) "/map");
-  char* robot_frame ((char*) "/base_link");
-  // TODO: get frames from params 
- 
+int main(int argc, char** argv) { 
 	ROS_INFO("Starting node...");
 	ros::init(argc, argv, "nav_analysis");
   ros::NodeHandle nh;
   ros::Rate rate(TIME);
 	metricListener ml = metricListener();
-
-	ros::Subscriber resultSub = nh.subscribe("/move_base/result", \
+  
+  std::string map_frame;
+  std::string robot_frame;
+  if(!ros::param::get("~map_frame", map_frame)) ROS_ERROR("Can not get param map_frame");
+  if(!ros::param::get("~robot_frame", robot_frame)) ROS_ERROR("Can not get param robot_frame");
+  
+  ros::Subscriber resultSub = nh.subscribe("/move_base/result", \
 	  1000, &metricListener::resultCallback, &ml);
   ros::Subscriber goalSub = nh.subscribe("/move_base/goal", \
     1000, &metricListener::goalCallback, &ml);
@@ -174,7 +175,7 @@ int main(int argc, char** argv) {
   tf::TransformListener listener;
   
   ROS_INFO("Waiting for transformation from '%s' to '%s'", \
-    map_frame, robot_frame);
+    map_frame.c_str(), robot_frame.c_str());
   listener.waitForTransform(map_frame, robot_frame, \
     ros::Time::now(), ros::Duration(60.0));
   
