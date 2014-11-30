@@ -1,5 +1,5 @@
 <launch>
-  <arg name="map_file" default="$(find auckbot_navigation)/maps/amcl_map.yaml"/>
+  <arg name="map_file" default="$(find auckbot_navigation)/maps/kitchenarea.yaml"/>
 
   <!-- TF FRAMES -->
   <node pkg="tf" type="static_transform_publisher" name="base_to_camera_tf" 
@@ -12,20 +12,9 @@
     <param name="output_frame_id" type="string" value="kinect_link"/>
   </node>
     
-	<!--- Run map_server -->
-	<!--node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)"/-->
-  
 	<!--- Run gmapping -->
-	<node name="slam_gmapping" pkg="gmapping" type="slam_gmapping" args="$(arg map_file)" outpu="screen">
+	<node name="slam_gmapping" pkg="gmapping" type="slam_gmapping" output="screen">
     <param name="scan" type="string" value="scan"/>
   </node>
  
-	<!--- Run AMCL -->
-	<!--include file="$(find auckbot_navigation)/launch/amcl_node.xml" /-->
-	
-	<!--- Run move base -->
-	<!--include file="$(find cob_navigation_global)/launch/2dnav_ros_eband.xml" >
-		<arg name="robot" value="$(arg robot)"/>
-	</include-->
-
 </launch>
