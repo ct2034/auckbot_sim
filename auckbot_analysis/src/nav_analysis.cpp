@@ -36,6 +36,15 @@ You should have received a copy of the GNU General Public License along with Auc
 #define PI        3.14159265359
 #define NSECPSEC  1 000 000 000
 
+//MongoDB ----
+#include <cstdlib>
+#include <iostream>
+#include "mongo/client/dbclient.h"
+#include "mongo/bson/bson.h"
+
+using namespace mongo;
+//-------------
+
 class Metric {
   private:
     char name[20];
@@ -133,13 +142,13 @@ void metricListener::addPoint(tf::StampedTransform transform) {
 void metricListener::resultCallback(const move_base_msgs::MoveBaseActionResult msg) {
   char stringInfo[200];
   metrics[0].toString(stringInfo);
-  ROS_INFO(stringInfo);
+  ROS_INFO("%s", stringInfo);
   metrics[1].toString(stringInfo);
-  ROS_INFO(stringInfo);
+  ROS_INFO("%s", stringInfo);
   metrics[2].toString(stringInfo);
-  ROS_INFO(stringInfo);
+  ROS_INFO("%s", stringInfo);
   metrics[3].toString(stringInfo);
-  ROS_INFO(stringInfo);
+  ROS_INFO("%s", stringInfo);
   metrics[3].~Metric();
 }
 
@@ -162,7 +171,14 @@ void metricListener::currentsCallback(const auckbot_gazebo::MotorCurrents msg) {
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 int main(int argc, char** argv) { 
-	ROS_INFO("Starting node...");
+  try{
+    mongo::DBClientConnection c;
+    c.connect("localhost");
+	} catch( const mongo::DBException &e ) {
+    ROS_ERROR("caught %s", e.what());
+  }
+
+  ROS_INFO("(MongoDB connected) Starting node...");
 	ros::init(argc, argv, "nav_analysis");
   ros::NodeHandle nh;
   ros::Rate rate(TIME);
