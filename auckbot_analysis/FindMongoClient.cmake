@@ -1,3 +1,4 @@
+# Most of this is derived from: https://searchcode.com/codesearch/view/15162231/ (THANKS :)
 cmake_minimum_required(VERSION 2.8.4)
 
 find_package(Boost COMPONENTS system thread signals filesystem QUIET) 
