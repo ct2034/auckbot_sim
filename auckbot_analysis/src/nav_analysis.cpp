@@ -174,6 +174,14 @@ int main(int argc, char** argv) {
   try{
     mongo::DBClientConnection c;
     c.connect("localhost");
+
+    BSONObjBuilder b;
+    b.append("name", "Ross");
+    b.append("age", 99);
+    BSONObj p = b.obj();
+
+    c.insert("mydb.persons", p);
+
 	} catch( const mongo::DBException &e ) {
     ROS_ERROR("caught %s", e.what());
   }
