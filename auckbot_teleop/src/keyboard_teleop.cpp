@@ -51,6 +51,15 @@ int main(int argc, char** argv)
 	speedPub = nh.advertise<geometry_msgs::Twist>("cmd_vel", 1);
 	ros::Rate loop_rate(LOOP_RATE);
 	
+  float max_sp_lin = .5; 
+  float max_sp_rot = .2; 
+  float grad = .3; 
+  if(!ros::param::get("~max_sp_lin", max_sp_lin)) ROS_ERROR("Can not get param max_sp_lin");
+  if(!ros::param::get("~max_sp_rot", max_sp_rot)) ROS_ERROR("Can not get param max_sp_rot");
+  if(!ros::param::get("~grad", grad)) ROS_ERROR("Can not get param grad");
+
+// --------------------------
+
 	initscr();
 	raw();
 	keypad(stdscr, TRUE);
@@ -59,10 +68,6 @@ int main(int argc, char** argv)
 	char input = NO_INPUT; 
 	
 	int row, col;
-	
-	float max_sp_lin = .5; // TODO read from launchfile
-	float max_sp_rot = .2; // TODO read from launchfile
-	float grad = .3; // TODO read from launchfile
 	
 	float sp_x = 0;
 	float sp_y = 0;
