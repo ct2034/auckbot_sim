@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(auckbot_nav_analysis)
+project(auckbot_analysis)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -84,7 +84,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES auckbot_nav_analysis
+#  LIBRARIES auckbot_analysis
    CATKIN_DEPENDS auckbot_gazebo geometry_msgs move_base_msgs roscpp tf
 #  DEPENDS system_lib
 )
@@ -101,8 +101,8 @@ include_directories(
 )
 
 ## Declare a cpp library
-# add_library(auckbot_nav_analysis
-#   src/${PROJECT_NAME}/auckbot_nav_analysis.cpp
+# add_library(auckbot_analysis
+#   src/${PROJECT_NAME}/auckbot_analysis.cpp
 # )
 
 ## Declare a cpp executable
@@ -110,7 +110,7 @@ add_executable(nav_analysis src/nav_analysis.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
-# add_dependencies(auckbot_nav_analysis_node auckbot_nav_analysis_generate_messages_cpp)
+# add_dependencies(auckbot_analysis_node auckbot_analysis_generate_messages_cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(nav_analysis
@@ -132,7 +132,7 @@ target_link_libraries(nav_analysis
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS auckbot_nav_analysis auckbot_nav_analysis_node
+# install(TARGETS auckbot_analysis auckbot_analysis_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -157,7 +157,7 @@ target_link_libraries(nav_analysis
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_auckbot_nav_analysis.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_auckbot_analysis.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

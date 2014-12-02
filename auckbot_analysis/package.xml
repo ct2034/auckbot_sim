@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package>
-  <name>auckbot_nav_analysis</name>
+  <name>auckbot_analysis</name>
   <version>0.0.0</version>
-  <description>The auckbot_nav_analysis package</description>
+  <description>The auckbot_analysis package</description>
 
   <maintainer email="post@henkelchristian.de">Christian Henkel</maintainer>
 
@@ -14,7 +14,7 @@
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
   <!-- Optional attribute type can be: website, bugtracker, or repository -->
   <!-- Example: -->
-  <!-- <url type="website">http://wiki.ros.org/auckbot_nav_analysis</url> -->
+  <!-- <url type="website">http://wiki.ros.org/auckbot_analysis</url> -->
 
 
   <!-- Author tags are optional, mutiple are allowed, one per tag -->
