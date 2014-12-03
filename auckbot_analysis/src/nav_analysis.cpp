@@ -62,9 +62,10 @@ class Metric {
     Metric() {}
     Metric(char* _name, char* _description);
     void toString(char*);
+    void getName(char* _nam){ strcpy(_nam, name); }
     void getValue(float* _val){ *_val = value; }
-    void getValue(char* _val){ strcpy(sValue, _val); }
-    void setSValue(char* _val){ strcpy(_val, sValue); }
+    void getValue(char* _val){ strcpy(_val, sValue); }
+    void setSValue(char* _val){ strcpy(sValue, _val); }
     void resetValueAndTime();
     void addValue(float _val){ value += _val; }
     float passedTime(ros::Time now);
@@ -81,11 +82,18 @@ void Metric::resetValueAndTime(){
   strcpy(sValue, "N/A");
   timeLast = ros::Time::now();
 }
-
     
 void Metric::toString(char* message) {
-  sprintf(message, "Metric '%s': >%s<.\nValue: %f", name, \
-    description, value);
+  if(strcmp(sValue, "N/A") == 0 & value >= 0.0) { // this is a float Metric
+    sprintf(message, "Metric '%s': >%s<.\nValue: %f", name, \
+      description, value);
+  }
+  else if (strcmp(sValue, "N/A") != 0 & value == 0.0) { // this is a String Metric
+    sprintf(message, "Metric '%s': >%s<.\nValue: %s", name, \
+      description, sValue);
+  } else {
+    ROS_ERROR("String and value set for Metric '%s'", name);
+  }
   return;
 }
 
@@ -105,10 +113,12 @@ class metricListener {
     DBClientConnection* c;
     BSONObjBuilder* b;
     bool builderCreated;
+    bool debug;
  
   public:
   //constructors
     metricListener();
+    metricListener(bool debug);
   //setter / getter
     void addPoint(tf::StampedTransform transform);
     void setOldPose(tf::StampedTransform transform){ \
@@ -126,12 +136,17 @@ class metricListener {
 // class functions
 //constructors
 metricListener::metricListener() {
+}
+
+metricListener::metricListener(bool _debug) {
   metrics[0] = Metric((char*) "Length [m]", \
     (char*) "The total length of the route");
   metrics[1] = Metric((char*) "Rotation [rad]", \
     (char*) "The total rotation along the route");
   metrics[2] = Metric((char*) "Current [As]", \
     (char*) "Consumed motor current");
+  metrics[3] = Metric((char*) "Planner Setup", \
+    (char*) "Values that are set for setup of move_base");
   oldPose = tf::Transform();
 
   try{
@@ -143,6 +158,7 @@ metricListener::metricListener() {
   }
 
   builderCreated = false;
+  debug = _debug;
 }
 
 void metricListener::addPoint(tf::StampedTransform transform) {
@@ -156,8 +172,8 @@ void metricListener::addPoint(tf::StampedTransform transform) {
   if (dist>THD) 
   {
     //ROS_INFO("New point: %f, %f, %f\n d: %f, r: %f", \
-      transform.getOrigin().x(), transform.getOrigin().y(), \
-      getYaw(transform.getRotation()), dist, rot);
+    //  transform.getOrigin().x(), transform.getOrigin().y(), \
+    //  getYaw(transform.getRotation()), dist, rot);
     metrics[0].addValue(dist);
     metrics[1].addValue(rot);
     this->setOldPose(transform);
@@ -166,16 +182,22 @@ void metricListener::addPoint(tf::StampedTransform transform) {
 
 // callbacks
 void metricListener::resultCallback(const move_base_msgs::MoveBaseActionResult msg) {
-  char stringInfo[200];
-  metrics[0].toString(stringInfo);
-  ROS_INFO("%s", stringInfo);
-  metrics[1].toString(stringInfo);
-  ROS_INFO("%s", stringInfo);
-  metrics[2].toString(stringInfo);
-  ROS_INFO("%s", stringInfo);
-  metrics[3].toString(stringInfo);
-  ROS_INFO("%s", stringInfo);
-  metrics[3].~Metric();
+  if(debug) { // terminal only
+    char stringInfo[200];
+    metrics[0].toString(stringInfo);
+    ROS_INFO("%s", stringInfo);
+    metrics[1].toString(stringInfo);
+    ROS_INFO("%s", stringInfo);
+    metrics[2].toString(stringInfo);
+    ROS_INFO("%s", stringInfo);
+    metrics[3].toString(stringInfo);
+    ROS_INFO("%s", stringInfo);
+    metrics[3].~Metric();
+  }
+  else //debug
+  { // DB only
+    ROS_INFO("not debug");
+  }
 }
 
 void metricListener::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) {
@@ -186,7 +208,7 @@ void metricListener::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) 
   char params[100];
   sprintf( params, "MB_USE_GRID_PATH: %s\nMB_USE_GRID_PATH: %s\n", \
     getenv ("MB_BASE_GLOBAL_PLANNER"), getenv ("MB_USE_GRID_PATH"));
-  metrics[3] = Metric((char*) "Planner Parameters", params);
+  metrics[3].setSValue(params);
 }
 
 void metricListener::currentsCallback(const auckbot_gazebo::MotorCurrents msg) {
@@ -235,13 +257,18 @@ int main(int argc, char** argv) {
   ros::init(argc, argv, "nav_analysis");
   ros::NodeHandle nh;
   ros::Rate rate(TIME);
-
-  metricListener ml = metricListener();
    
   std::string map_frame;
   std::string robot_frame;
-  if(!ros::param::get("~map_frame", map_frame)) ROS_ERROR("Can not get param map_frame");
-  if(!ros::param::get("~robot_frame", robot_frame)) ROS_ERROR("Can not get param robot_frame");
+  bool debug;
+  if(!ros::param::get("~map_frame", map_frame)) \
+    ROS_ERROR("Can not get param map_frame");
+  if(!ros::param::get("~robot_frame", robot_frame)) \
+    ROS_ERROR("Can not get param robot_frame");
+  if(!ros::param::get("~debug", debug)) \
+    ROS_ERROR("Can not get param debug");
+
+  metricListener ml = metricListener(debug);
   
   ros::Subscriber resultSub = nh.subscribe("/move_base/result", \
 	  1000, &metricListener::resultCallback, &ml);
