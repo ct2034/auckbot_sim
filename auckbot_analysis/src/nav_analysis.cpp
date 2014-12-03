@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License along with Auc
 ***************************************************/
  
 #include <string>
+#include <exception>
 
 #include <ros/ros.h> 
 #include <ros/time.h>  
@@ -37,6 +38,10 @@ You should have received a copy of the GNU General Public License along with Auc
 #define NSECPSEC  1 000 000 000
 
 //MongoDB ----
+#define MONGO_HOST  "localhost"
+//#define MONGO_DB    "nav_analysis"
+#define MONGO_COL   "nav_analysis.trips"
+
 #include <cstdlib>
 #include <iostream>
 #include "mongo/client/dbclient.h"
@@ -50,13 +55,16 @@ class Metric {
     char name[20];
     char description[120];
     float value;
+    char sValue[200];
     ros::Time timeLast;
     
   public:
     Metric() {}
     Metric(char* _name, char* _description);
     void toString(char*);
-    float getValue(){ return value; }
+    void getValue(float* _val){ *_val = value; }
+    void getValue(char* _val){ strcpy(sValue, _val); }
+    void setSValue(char* _val){ strcpy(_val, sValue); }
     void resetValueAndTime();
     void addValue(float _val){ value += _val; }
     float passedTime(ros::Time now);
@@ -69,7 +77,8 @@ Metric::Metric(char* _name, char* _description) {
 }
 
 void Metric::resetValueAndTime(){
-  value = 0;
+  value = 0.0;
+  strcpy(sValue, "N/A");
   timeLast = ros::Time::now();
 }
 
@@ -93,6 +102,9 @@ class metricListener {
   private:
     tf::Transform oldPose;
     Metric metrics[4];
+    DBClientConnection* c;
+    BSONObjBuilder* b;
+    bool builderCreated;
  
   public:
   //constructors
@@ -105,6 +117,10 @@ class metricListener {
     void resultCallback(const move_base_msgs::MoveBaseActionResult msg);
     void goalCallback(const move_base_msgs::MoveBaseActionGoal msg);
     void currentsCallback(const auckbot_gazebo::MotorCurrents msg);
+  //DB access
+    void saveToDB(char* name, char* value);
+    void saveToDB(char* name, float value);
+    void finalize(void);
 };
 
 // class functions
@@ -117,6 +133,16 @@ metricListener::metricListener() {
   metrics[2] = Metric((char*) "Current [As]", \
     (char*) "Consumed motor current");
   oldPose = tf::Transform();
+
+  try{
+    c = new DBClientConnection();
+    c->connect(MONGO_HOST);
+
+  } catch( const mongo::DBException &e ) {
+    ROS_ERROR("caught %s", e.what());
+  }
+
+  builderCreated = false;
 }
 
 void metricListener::addPoint(tf::StampedTransform transform) {
@@ -168,30 +194,50 @@ void metricListener::currentsCallback(const auckbot_gazebo::MotorCurrents msg) {
   metrics[2].addValue( currents * metrics[2].passedTime(msg.time) );
 }
 
+void metricListener::saveToDB(char* name, char* value) {
+  if (!builderCreated) { 
+    b = new BSONObjBuilder();
+    //b->append("start_time", DATENOW); 
+    builderCreated = true;
+  }
+  b->append(name, value);
+}
+
+void metricListener::saveToDB(char* name, float value) {
+  if (!builderCreated) { 
+    b = new BSONObjBuilder();
+    //b->append("start_time", DATENOW); 
+    builderCreated = true;
+  }
+  b->append(name, value);
+}
+
+void metricListener::finalize(void) {
+  try{
+    //b->append("goal_time", DATENOW);
+    BSONObj p = b->obj();
+    c->insert(MONGO_COL, p);
+
+    ROS_INFO("pre: %lu", (long unsigned) b);
+    b->~BSONObjBuilder();
+    ROS_INFO("after: %lu", (long unsigned) b);
+
+    builderCreated = false;
+  } catch( const mongo::DBException &e ) {
+    ROS_ERROR("caught %s", e.what());
+  }
+}
+
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 int main(int argc, char** argv) { 
-  try{
-    mongo::DBClientConnection c;
-    c.connect("localhost");
-
-    BSONObjBuilder b;
-    b.append("name", "Ross");
-    b.append("age", 99);
-    BSONObj p = b.obj();
-
-    c.insert("mydb.persons", p);
-
-	} catch( const mongo::DBException &e ) {
-    ROS_ERROR("caught %s", e.what());
-  }
-
-  ROS_INFO("(MongoDB connected) Starting node...");
-	ros::init(argc, argv, "nav_analysis");
+  ROS_INFO("Starting node...");
+  ros::init(argc, argv, "nav_analysis");
   ros::NodeHandle nh;
   ros::Rate rate(TIME);
-	metricListener ml = metricListener();
-  
+
+  metricListener ml = metricListener();
+   
   std::string map_frame;
   std::string robot_frame;
   if(!ros::param::get("~map_frame", map_frame)) ROS_ERROR("Can not get param map_frame");
