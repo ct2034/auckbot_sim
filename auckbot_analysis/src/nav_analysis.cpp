@@ -37,7 +37,7 @@ You should have received a copy of the GNU General Public License along with Auc
 #define PI        3.14159265359
 #define NSECPSEC  1 000 000 000
 // Numer of metrics float
-#define NO_MET_F  3
+#define NO_MET_F  4
 // Numer of metrics string
 #define NO_MET_S  1
 // String length for name
@@ -156,7 +156,9 @@ metricListener::metricListener(bool _debug) {
     (char*) "The total rotation along the route");
   metrics[2] = Metric((char*) "Current [As]", \
     (char*) "Consumed motor current");
-  metrics[3] = Metric((char*) "Planner Setup", \
+  metrics[3] = Metric((char*) "Duration [ms]", \
+    (char*) "Total time used");
+  metrics[4] = Metric((char*) "Planner Setup", \
     (char*) "Values that are set for setup of move_base");
   oldPose = tf::Transform();
 
@@ -197,6 +199,9 @@ void metricListener::resultCallback(const move_base_msgs::MoveBaseActionResult m
   float check;
   metrics[0].getValue(&check); // evaluate to filter out to short trips
 
+  // capture duration
+  metrics[3].addValue(startTime - convertTime(ros::Time::now().toBoost()));
+
   // ROS_INFO("2");
   if(!debug & check>0.0) { // save to DB
     char name[STRL_NAME];
@@ -235,8 +240,10 @@ void metricListener::resultCallback(const move_base_msgs::MoveBaseActionResult m
   ROS_INFO("%s", stringInfo);
   metrics[3].toString(stringInfo);
   ROS_INFO("%s", stringInfo);
-  metrics[3].~Metric();
-  metrics[3] = Metric((char*) "Planner Setup", \
+  metrics[4].toString(stringInfo);
+  ROS_INFO("%s", stringInfo);
+  metrics[4].~Metric();
+  metrics[4] = Metric((char*) "Planner Setup", \
     (char*) "Values that are set for setup of move_base");
 
   ROS_INFO("7");
@@ -250,7 +257,7 @@ void metricListener::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) 
   char params[100];
   sprintf( params, "MB_USE_GRID_PATH: %s \nMB_USE_GRID_PATH: %s \n", \
     getenv ("MB_BASE_GLOBAL_PLANNER"), getenv ("MB_USE_GRID_PATH"));
-  metrics[3].setSValue(params);
+  metrics[4].setSValue(params);
   startTime = convertTime(ros::Time::now().toBoost());
 }
 
@@ -279,7 +286,6 @@ void metricListener::saveToDB(char* name, float value) {
 
 void metricListener::finalize(void) {
   try{
-    b->appendDate("goal_time", convertTime(ros::Time::now().toBoost())); 
     BSONObj p = b->obj();
     c->insert(MONGO_COL, p);
 
@@ -291,7 +297,6 @@ void metricListener::finalize(void) {
 }
 
 // converting a boost time into a mongo time
-// source: http://stackoverflow.com/questions/10973846/convert-between-boostposix-timeptime-and-mongodate-t
 mongo::Date_t metricListener::convertTime(const boost::posix_time::ptime& time) {
   std::tm pt_tm = boost::posix_time::to_tm(time);
   std::time_t t = mktime(&pt_tm);  
