@@ -156,7 +156,7 @@ metricListener::metricListener(bool _debug) {
     (char*) "The total rotation along the route");
   metrics[2] = Metric((char*) "Current [As]", \
     (char*) "Consumed motor current");
-  metrics[3] = Metric((char*) "Duration [ms]", \
+  metrics[3] = Metric((char*) "Duration [s]", \
     (char*) "Total time used");
   metrics[4] = Metric((char*) "Planner Setup", \
     (char*) "Values that are set for setup of move_base");
@@ -200,7 +200,7 @@ void metricListener::resultCallback(const move_base_msgs::MoveBaseActionResult m
   metrics[0].getValue(&check); // evaluate to filter out to short trips
 
   // capture duration
-  metrics[3].addValue(startTime - convertTime(ros::Time::now().toBoost()));
+  metrics[3].addValue(convertTime(ros::Time::now().toBoost()) - startTime);
 
   // ROS_INFO("2");
   if(!debug & check>0.0) { // save to DB
