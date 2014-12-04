@@ -246,7 +246,7 @@ void metricListener::resultCallback(const move_base_msgs::MoveBaseActionResult m
   metrics[4] = Metric((char*) "Planner Setup", \
     (char*) "Values that are set for setup of move_base");
 
-  ROS_INFO("7");
+  // ROS_INFO("7");
 }
 
 void metricListener::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) {
