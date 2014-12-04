@@ -36,6 +36,14 @@ You should have received a copy of the GNU General Public License along with Auc
 #define THD       0.0001
 #define PI        3.14159265359
 #define NSECPSEC  1 000 000 000
+// Numer of metrics float
+#define NO_MET_F  3
+// Numer of metrics string
+#define NO_MET_S  1
+// String length for name
+#define STRL_NAME 20
+// String length for description
+#define STRL_DESC 200
 
 //MongoDB ----
 #define MONGO_HOST  "localhost"
@@ -52,10 +60,10 @@ using namespace mongo;
 
 class Metric {
   private:
-    char name[20];
-    char description[120];
+    char name[STRL_NAME];
+    char description[STRL_DESC];
     float value;
-    char sValue[200];
+    char sValue[STRL_DESC];
     ros::Time timeLast;
     
   public:
@@ -109,12 +117,13 @@ float Metric::passedTime(ros::Time now) {
 class metricListener {
   private:
     tf::Transform oldPose;
-    Metric metrics[4];
+    Metric metrics[NO_MET_F+NO_MET_S];
     DBClientConnection* c;
     BSONObjBuilder* b;
     bool builderCreated;
     bool debug;
- 
+    mongo::Date_t startTime;
+   
   public:
   //constructors
     metricListener();
@@ -131,6 +140,8 @@ class metricListener {
     void saveToDB(char* name, char* value);
     void saveToDB(char* name, float value);
     void finalize(void);
+  //helper
+    mongo::Date_t convertTime(const boost::posix_time::ptime& time);
 };
 
 // class functions
@@ -182,22 +193,53 @@ void metricListener::addPoint(tf::StampedTransform transform) {
 
 // callbacks
 void metricListener::resultCallback(const move_base_msgs::MoveBaseActionResult msg) {
-  if(debug) { // terminal only
-    char stringInfo[200];
-    metrics[0].toString(stringInfo);
-    ROS_INFO("%s", stringInfo);
-    metrics[1].toString(stringInfo);
-    ROS_INFO("%s", stringInfo);
-    metrics[2].toString(stringInfo);
-    ROS_INFO("%s", stringInfo);
-    metrics[3].toString(stringInfo);
-    ROS_INFO("%s", stringInfo);
-    metrics[3].~Metric();
-  }
-  else //debug
-  { // DB only
-    ROS_INFO("not debug");
-  }
+  // ROS_INFO("1");
+  float check;
+  metrics[0].getValue(&check); // evaluate to filter out to short trips
+
+  // ROS_INFO("2");
+  if(!debug & check>0.0) { // save to DB
+    char name[STRL_NAME];
+    char des[STRL_DESC];
+    float val;
+    // ROS_INFO("3");
+    for(int i=0; i<NO_MET_F; i++) {
+      // ROS_INFO("3.1");
+      metrics[i].getName(name);
+      metrics[i].getValue(&val);
+      // ROS_INFO("3.2");   
+      saveToDB((char *) name, val);  
+      // ROS_INFO("3.3");    
+      // saveToDB((char *) "name", 0.1); 
+    }
+    // ROS_INFO("4");
+    for(int i=NO_MET_F; i<NO_MET_F+NO_MET_S; i++) {
+      metrics[i].getName(name);
+      metrics[i].getValue(des);
+      saveToDB((char *) name, (char *) des);
+      // saveToDB((char *) "name", (char *) "des");      
+    }
+    // ROS_INFO("5");
+    finalize(); 
+  } // terminal only
+
+  // ROS_INFO("6");
+  if(check == 0.0) ROS_INFO("(This is not saved in the DB ..)");
+  
+  char stringInfo[200];
+  metrics[0].toString(stringInfo);
+  ROS_INFO("%s", stringInfo);
+  metrics[1].toString(stringInfo);
+  ROS_INFO("%s", stringInfo);
+  metrics[2].toString(stringInfo);
+  ROS_INFO("%s", stringInfo);
+  metrics[3].toString(stringInfo);
+  ROS_INFO("%s", stringInfo);
+  metrics[3].~Metric();
+  metrics[3] = Metric((char*) "Planner Setup", \
+    (char*) "Values that are set for setup of move_base");
+
+  ROS_INFO("7");
 }
 
 void metricListener::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) {
@@ -206,9 +248,10 @@ void metricListener::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) 
   metrics[1].resetValueAndTime();
   metrics[2].resetValueAndTime();
   char params[100];
-  sprintf( params, "MB_USE_GRID_PATH: %s\nMB_USE_GRID_PATH: %s\n", \
+  sprintf( params, "MB_USE_GRID_PATH: %s \nMB_USE_GRID_PATH: %s \n", \
     getenv ("MB_BASE_GLOBAL_PLANNER"), getenv ("MB_USE_GRID_PATH"));
   metrics[3].setSValue(params);
+  startTime = convertTime(ros::Time::now().toBoost());
 }
 
 void metricListener::currentsCallback(const auckbot_gazebo::MotorCurrents msg) {
@@ -219,7 +262,7 @@ void metricListener::currentsCallback(const auckbot_gazebo::MotorCurrents msg) {
 void metricListener::saveToDB(char* name, char* value) {
   if (!builderCreated) { 
     b = new BSONObjBuilder();
-    //b->append("start_time", DATENOW); 
+    b->appendDate("start_time", startTime); 
     builderCreated = true;
   }
   b->append(name, value);
@@ -228,7 +271,7 @@ void metricListener::saveToDB(char* name, char* value) {
 void metricListener::saveToDB(char* name, float value) {
   if (!builderCreated) { 
     b = new BSONObjBuilder();
-    //b->append("start_time", DATENOW); 
+    b->appendDate("start_time", startTime); 
     builderCreated = true;
   }
   b->append(name, value);
@@ -236,18 +279,24 @@ void metricListener::saveToDB(char* name, float value) {
 
 void metricListener::finalize(void) {
   try{
-    //b->append("goal_time", DATENOW);
+    b->appendDate("goal_time", convertTime(ros::Time::now().toBoost())); 
     BSONObj p = b->obj();
     c->insert(MONGO_COL, p);
 
-    ROS_INFO("pre: %lu", (long unsigned) b);
     b->~BSONObjBuilder();
-    ROS_INFO("after: %lu", (long unsigned) b);
-
     builderCreated = false;
   } catch( const mongo::DBException &e ) {
     ROS_ERROR("caught %s", e.what());
   }
+}
+
+// converting a boost time into a mongo time
+// source: http://stackoverflow.com/questions/10973846/convert-between-boostposix-timeptime-and-mongodate-t
+mongo::Date_t metricListener::convertTime(const boost::posix_time::ptime& time) {
+  std::tm pt_tm = boost::posix_time::to_tm(time);
+  std::time_t t = mktime(&pt_tm);  
+  mongo::Date_t d(t);
+  return d;
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
