@@ -19,6 +19,9 @@
 	<include file="$(find auckbot_navigation)/launch/amcl_node.xml" />
 	
 	<!--- Run move base -->
-	<include file="$(find auckbot_navigation)/launch/move_base.xml" />
+  	<include file="$(find auckbot_navigation)/launch/move_base.xml" />
+
+  	<!--- Run move base -->
+  	<include file="$(find auckbot_analysis)/launch/nav_analysis.launch" />
 
 </launch>

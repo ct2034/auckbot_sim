@@ -43,8 +43,10 @@
   <run_depend>roscpp</run_depend>
   <run_depend>rtabmap</run_depend>
   <run_depend>tf</run_depend>
-  <run_depend>turtlebot_navigation</run_depend>   <!-- In fact this should be replaced by move_base and so on .. -->
+  <run_depend>amcl</run_depend>   
+  <run_depend>move_base</run_depend>   
   <run_depend>depthimage_to_laserscan</run_depend>
+  <run_depend>auckbot_analysis</run_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
