@@ -125,6 +125,7 @@ class metricListener {
     bool builderCreated;
     bool debug;
     pt::ptime startTime;
+    geometry_msgs::Pose goal;
    
   public:
   //constructors
@@ -273,6 +274,8 @@ void metricListener::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) 
     getenv ("MB_BASE_GLOBAL_PLANNER"), getenv ("MB_USE_GRID_PATH"));
   metrics[4].setSValue(params);
   startTime = ros::Time::now().toBoost();
+
+  goal = msg.goal.target_pose.pose;
 }
 
 void metricListener::currentsCallback(const auckbot_gazebo::MotorCurrents msg) {
@@ -310,6 +313,10 @@ void metricListener::checkCreation(void){
 
 void metricListener::finalize(void) {
   try{
+    float gx = goal.position.x;
+    float gy = goal.position.y;
+    float gth = tf::getYaw(goal.orientation);
+    b->append("Goal [m, m, rad]", BSON_ARRAY( gx << gy << gth )); 
     b->append("covered_route", ab[0]->arr());
     b->append("planned_route", ab[1]->arr());
 
