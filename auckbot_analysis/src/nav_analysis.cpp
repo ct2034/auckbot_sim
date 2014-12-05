@@ -56,6 +56,7 @@ You should have received a copy of the GNU General Public License along with Auc
 #include "mongo/bson/bson.h"
 
 using namespace mongo;
+namespace pt = boost::posix_time;
 //-------------
 
 class Metric {
@@ -122,7 +123,7 @@ class metricListener {
     BSONObjBuilder* b;
     bool builderCreated;
     bool debug;
-    mongo::Date_t startTime;
+    pt::ptime startTime;
    
   public:
   //constructors
@@ -141,7 +142,8 @@ class metricListener {
     void saveToDB(char* name, float value);
     void finalize(void);
   //helper
-    mongo::Date_t convertTime(const boost::posix_time::ptime& time);
+    long long int convertTime(pt::ptime time);
+    void checkCreation(void);
 };
 
 // class functions
@@ -156,7 +158,7 @@ metricListener::metricListener(bool _debug) {
     (char*) "The total rotation along the route");
   metrics[2] = Metric((char*) "Current [As]", \
     (char*) "Consumed motor current");
-  metrics[3] = Metric((char*) "Duration [s]", \
+  metrics[3] = Metric((char*) "Duration [ms]", \
     (char*) "Total time used");
   metrics[4] = Metric((char*) "Planner Setup", \
     (char*) "Values that are set for setup of move_base");
@@ -200,7 +202,9 @@ void metricListener::resultCallback(const move_base_msgs::MoveBaseActionResult m
   metrics[0].getValue(&check); // evaluate to filter out to short trips
 
   // capture duration
-  metrics[3].addValue(convertTime(ros::Time::now().toBoost()) - startTime);
+  pt::time_duration dura = ros::Time::now().toBoost() - startTime;
+  float durationMillis = dura.total_milliseconds();
+  metrics[3].addValue(durationMillis);
 
   // ROS_INFO("2");
   if(!debug & check>0.0) { // save to DB
@@ -258,7 +262,7 @@ void metricListener::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) 
   sprintf( params, "MB_USE_GRID_PATH: %s \nMB_USE_GRID_PATH: %s \n", \
     getenv ("MB_BASE_GLOBAL_PLANNER"), getenv ("MB_USE_GRID_PATH"));
   metrics[4].setSValue(params);
-  startTime = convertTime(ros::Time::now().toBoost());
+  startTime = ros::Time::now().toBoost();
 }
 
 void metricListener::currentsCallback(const auckbot_gazebo::MotorCurrents msg) {
@@ -266,22 +270,25 @@ void metricListener::currentsCallback(const auckbot_gazebo::MotorCurrents msg) {
   metrics[2].addValue( currents * metrics[2].passedTime(msg.time) );
 }
 
+
 void metricListener::saveToDB(char* name, char* value) {
-  if (!builderCreated) { 
-    b = new BSONObjBuilder();
-    b->appendDate("start_time", startTime); 
-    builderCreated = true;
-  }
+  checkCreation();
   b->append(name, value);
 }
 
 void metricListener::saveToDB(char* name, float value) {
+  checkCreation();
+  b->append(name, value);
+}
+
+void metricListener::checkCreation(void){
   if (!builderCreated) { 
     b = new BSONObjBuilder();
-    b->appendDate("start_time", startTime); 
+    b->appendDate("start_time", \
+      mongo::Date_t( convertTime( pt::second_clock::local_time() ) )
+      ); 
     builderCreated = true;
   }
-  b->append(name, value);
 }
 
 void metricListener::finalize(void) {
@@ -297,11 +304,10 @@ void metricListener::finalize(void) {
 }
 
 // converting a boost time into a mongo time
-mongo::Date_t metricListener::convertTime(const boost::posix_time::ptime& time) {
-  std::tm pt_tm = boost::posix_time::to_tm(time);
-  std::time_t t = mktime(&pt_tm);  
-  mongo::Date_t d(t);
-  return d;
+long long int metricListener::convertTime(pt::ptime time) {
+  pt::ptime time_t_epoch(boost::gregorian::date(1970,1,1)); 
+  pt::time_duration diff = time - time_t_epoch;
+  return diff.total_milliseconds();
 }
 
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
