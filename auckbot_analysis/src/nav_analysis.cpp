@@ -36,9 +36,9 @@ You should have received a copy of the GNU General Public License along with Auc
 #define THD       0.0001
 #define PI        3.14159265359
 #define NSECPSEC  1 000 000 000
-// Numer of metrics float
+// Number of metrics float
 #define NO_MET_F  4
-// Numer of metrics string
+// Number of metrics string
 #define NO_MET_S  1
 // String length for name
 #define STRL_NAME 20
@@ -121,6 +121,7 @@ class metricListener {
     Metric metrics[NO_MET_F+NO_MET_S];
     DBClientConnection* c;
     BSONObjBuilder* b;
+    BSONArrayBuilder* ab[2]; // 0: covered_route, 1: planned_route
     bool builderCreated;
     bool debug;
     pt::ptime startTime;
@@ -140,6 +141,7 @@ class metricListener {
   //DB access
     void saveToDB(char* name, char* value);
     void saveToDB(char* name, float value);
+    void pointToDB(int n, float x, float y, float th);
     void finalize(void);
   //helper
     long long int convertTime(pt::ptime time);
@@ -177,10 +179,15 @@ metricListener::metricListener(bool _debug) {
 }
 
 void metricListener::addPoint(tf::StampedTransform transform) {
-  float dist = sqrt( pow(transform.getOrigin().x() - oldPose.getOrigin().x(), 2) +
-                     pow(transform.getOrigin().y() - oldPose.getOrigin().y(), 2) );
+  float x, y, th;
+  x = transform.getOrigin().x();
+  y = transform.getOrigin().y();
+  th = getYaw(transform.getRotation());
+
+  float dist = sqrt( pow(x - oldPose.getOrigin().x(), 2) +
+                     pow(y - oldPose.getOrigin().y(), 2) );
   double roll, pitch, yaw;
-  float rot = fabs( getYaw(transform.getRotation()) - getYaw(oldPose.getRotation()) );
+  float rot = fabs( th - getYaw(oldPose.getRotation()) );
   if (rot > PI) rot -= 2 * PI;
   rot = fabs(rot);
 
@@ -191,6 +198,9 @@ void metricListener::addPoint(tf::StampedTransform transform) {
     //  getYaw(transform.getRotation()), dist, rot);
     metrics[0].addValue(dist);
     metrics[1].addValue(rot);
+
+    pointToDB(0, x, y, th); // adding to covered_route (0)
+
     this->setOldPose(transform);
   }
 }
@@ -281,22 +291,34 @@ void metricListener::saveToDB(char* name, float value) {
   b->append(name, value);
 }
 
+void metricListener::pointToDB(int n, float x, float y, float th){
+  checkCreation();
+  ab[n]->append( BSON_ARRAY( x << y << th ) );
+}
+
 void metricListener::checkCreation(void){
   if (!builderCreated) { 
     b = new BSONObjBuilder();
     b->appendDate("start_time", \
       mongo::Date_t( convertTime( pt::second_clock::local_time() ) )
       ); 
+    ab[0] = new BSONArrayBuilder();
+    ab[1] = new BSONArrayBuilder();
     builderCreated = true;
   }
 }
 
 void metricListener::finalize(void) {
   try{
+    b->append("covered_route", ab[0]->arr());
+    b->append("planned_route", ab[1]->arr());
+
     BSONObj p = b->obj();
     c->insert(MONGO_COL, p);
 
     b->~BSONObjBuilder();
+    ab[0]->~BSONArrayBuilder();
+    ab[1]->~BSONArrayBuilder();
     builderCreated = false;
   } catch( const mongo::DBException &e ) {
     ROS_ERROR("caught %s", e.what());
