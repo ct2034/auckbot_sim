@@ -31,6 +31,7 @@ include_directories(
 )
 
 add_executable(nav_analysis src/nav_analysis.cpp)
+add_executable(automatron src/automatron.cpp)
 
 MESSAGE( ">> MongoClient_LIBRARIES: " ${MongoClient_LIBRARIES} )
 
@@ -38,4 +39,8 @@ target_link_libraries(nav_analysis
   ${catkin_LIBRARIES}
   ${MongoClient_LIBRARIES} 
   ${Boost_LIBRARIES}
+)
+
+target_link_libraries(automatron
+  ${catkin_LIBRARIES}
 )

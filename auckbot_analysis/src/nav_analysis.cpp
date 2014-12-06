@@ -124,8 +124,10 @@ class metricListener {
     BSONArrayBuilder* ab[2]; // 0: covered_route, 1: planned_route
     bool builderCreated;
     bool debug;
+    bool initPoseSet;
     pt::ptime startTime;
     geometry_msgs::Pose goal;
+    tf::Transform initp;
    
   public:
   //constructors
@@ -142,11 +144,13 @@ class metricListener {
   //DB access
     void saveToDB(char* name, char* value);
     void saveToDB(char* name, float value);
-    void pointToDB(int n, float x, float y, float th);
+    void pointToDBArr(int n, float x, float y, float th);
     void finalize(void);
   //helper
     long long int convertTime(pt::ptime time);
     void checkCreation(void);
+    void poseToXYTh(geometry_msgs::Pose pose, float coords[]);
+    void poseToXYTh(tf::Transform transform, float coords[]);
 };
 
 // class functions
@@ -176,33 +180,34 @@ metricListener::metricListener(bool _debug) {
   }
 
   builderCreated = false;
+  initPoseSet = false;
   debug = _debug;
 }
 
 void metricListener::addPoint(tf::StampedTransform transform) {
-  float x, y, th;
-  x = transform.getOrigin().x();
-  y = transform.getOrigin().y();
-  th = getYaw(transform.getRotation());
-
-  float dist = sqrt( pow(x - oldPose.getOrigin().x(), 2) +
-                     pow(y - oldPose.getOrigin().y(), 2) );
-  double roll, pitch, yaw;
-  float rot = fabs( th - getYaw(oldPose.getRotation()) );
+  float newp[3];
+  poseToXYTh(transform, newp);
+  float oldp[3];
+  poseToXYTh(oldPose, oldp);
+   
+  float dist = sqrt( pow(newp[0] - oldp[0], 2) +
+                     pow(newp[1] - oldp[1], 2) );
+  float rot = fabs( newp[2] - oldp[2] );
   if (rot > PI) rot -= 2 * PI;
   rot = fabs(rot);
 
   if (dist>THD) 
   {
-    //ROS_INFO("New point: %f, %f, %f\n d: %f, r: %f", \
-    //  transform.getOrigin().x(), transform.getOrigin().y(), \
-    //  getYaw(transform.getRotation()), dist, rot);
     metrics[0].addValue(dist);
     metrics[1].addValue(rot);
 
-    pointToDB(0, x, y, th); // adding to covered_route (0)
+    pointToDBArr(0, newp[0], newp[1], newp[2]); // adding to covered_route (0)
 
     this->setOldPose(transform);
+  }
+  if (!initPoseSet) {
+    initp = transform;
+    initPoseSet = true;
   }
 }
 
@@ -275,6 +280,7 @@ void metricListener::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) 
   metrics[4].setSValue(params);
   startTime = ros::Time::now().toBoost();
 
+  initPoseSet = false;
   goal = msg.goal.target_pose.pose;
 }
 
@@ -294,31 +300,34 @@ void metricListener::saveToDB(char* name, float value) {
   b->append(name, value);
 }
 
-void metricListener::pointToDB(int n, float x, float y, float th){
+void metricListener::pointToDBArr(int n, float x, float y, float th){
   checkCreation();
   ab[n]->append( BSON_ARRAY( x << y << th ) );
 }
 
 void metricListener::checkCreation(void){
   if (!builderCreated) { 
+    ab[0] = new BSONArrayBuilder();
+    ab[1] = new BSONArrayBuilder();
     b = new BSONObjBuilder();
+    builderCreated = true;
+    // start time
     b->appendDate("start_time", \
       mongo::Date_t( convertTime( pt::second_clock::local_time() ) )
       ); 
-    ab[0] = new BSONArrayBuilder();
-    ab[1] = new BSONArrayBuilder();
-    builderCreated = true;
   }
 }
 
 void metricListener::finalize(void) {
   try{
-    float gx = goal.position.x;
-    float gy = goal.position.y;
-    float gth = tf::getYaw(goal.orientation);
-    b->append("Goal [m, m, rad]", BSON_ARRAY( gx << gy << gth )); 
+    float g[3];
+    poseToXYTh(goal, g);
+    b->append("Goal [m, m, rad]", BSON_ARRAY( g[0] << g[1] << g[2] )); 
+    float i[3];
+    poseToXYTh(initp, i);
+    b->append("Initial Pose [m, m, rad]", BSON_ARRAY( i[0] << i[1] << i[2] )); 
     b->append("covered_route", ab[0]->arr());
-    b->append("planned_route", ab[1]->arr());
+    //b->append("planned_route", ab[1]->arr());
 
     BSONObj p = b->obj();
     c->insert(MONGO_COL, p);
@@ -339,6 +348,17 @@ long long int metricListener::convertTime(pt::ptime time) {
   return diff.total_milliseconds();
 }
 
+void metricListener::poseToXYTh(geometry_msgs::Pose pose, float coordsarr[]){
+  coordsarr[0] = pose.position.x;
+  coordsarr[1] = pose.position.y;
+  coordsarr[2] = tf::getYaw(pose.orientation);
+}
+
+void metricListener::poseToXYTh(tf::Transform transform, float coordsarr[]){
+  coordsarr[0] = transform.getOrigin().x();
+  coordsarr[1] = transform.getOrigin().y();
+  coordsarr[2] = getYaw(transform.getRotation());
+}
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 int main(int argc, char** argv) { 
