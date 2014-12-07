@@ -57,6 +57,9 @@ You should have received a copy of the GNU General Public License along with Auc
 
 using namespace mongo;
 namespace pt = boost::posix_time;
+
+// global params
+ros::NodeHandle* nh;
 //-------------
 
 class Metric {
@@ -125,7 +128,7 @@ class metricListener {
     bool builderCreated;
     bool debug;
     bool initPoseSet;
-    pt::ptime startTime;
+    pt::ptime* startTime;
     geometry_msgs::Pose goal;
     tf::Transform initp;
    
@@ -151,6 +154,7 @@ class metricListener {
     void checkCreation(void);
     void poseToXYTh(geometry_msgs::Pose pose, float coords[]);
     void poseToXYTh(tf::Transform transform, float coords[]);
+    void getPar(char* name, std::string* val);
 };
 
 // class functions
@@ -218,7 +222,7 @@ void metricListener::resultCallback(const move_base_msgs::MoveBaseActionResult m
   metrics[0].getValue(&check); // evaluate to filter out to short trips
 
   // capture duration
-  pt::time_duration dura = ros::Time::now().toBoost() - startTime;
+  pt::time_duration dura = ros::Time::now().toBoost() - *startTime;
   float durationMillis = dura.total_milliseconds();
   metrics[3].addValue(durationMillis);
 
@@ -274,11 +278,16 @@ void metricListener::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) 
   metrics[0].resetValueAndTime();
   metrics[1].resetValueAndTime();
   metrics[2].resetValueAndTime();
-  char params[100];
+  char params[STRL_DESC];
+  std::string* par_base_global_planner = new std::string();
+  getPar((char *) "/move_base/base_global_planner", par_base_global_planner);
+  std::string* par_use_grid_path = new std::string();
+  getPar((char *) "/move_base/use_grid_path", par_use_grid_path);
   sprintf( params, "MB_USE_GRID_PATH: %s \nMB_USE_GRID_PATH: %s \n", \
-    getenv ("MB_BASE_GLOBAL_PLANNER"), getenv ("MB_USE_GRID_PATH"));
+    par_base_global_planner->c_str(), par_use_grid_path->c_str());
   metrics[4].setSValue(params);
-  startTime = ros::Time::now().toBoost();
+  startTime->~ptime();
+  startTime = new pt::ptime(ros::Time::now().toBoost());
 
   initPoseSet = false;
   goal = msg.goal.target_pose.pose;
@@ -359,12 +368,19 @@ void metricListener::poseToXYTh(tf::Transform transform, float coordsarr[]){
   coordsarr[1] = transform.getOrigin().y();
   coordsarr[2] = getYaw(transform.getRotation());
 }
+
+void metricListener::getPar(char* name, std::string* val){
+  std::string strname(name);
+  if(!nh->getParam(strname, *val)) \
+    ROS_ERROR("Error getting parameter >%s<", name);
+}
 // ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 int main(int argc, char** argv) { 
   ROS_INFO("Starting node...");
   ros::init(argc, argv, "nav_analysis");
-  ros::NodeHandle nh;
+  //ros::NodeHandle nh;
+  nh = new ros::NodeHandle();
   ros::Rate rate(TIME);
    
   std::string map_frame;
@@ -379,11 +395,11 @@ int main(int argc, char** argv) {
 
   metricListener ml = metricListener(debug);
   
-  ros::Subscriber resultSub = nh.subscribe("/move_base/result", \
+  ros::Subscriber resultSub = nh->subscribe("/move_base/result", \
 	  1000, &metricListener::resultCallback, &ml);
-  ros::Subscriber goalSub = nh.subscribe("/move_base/goal", \
+  ros::Subscriber goalSub = nh->subscribe("/move_base/goal", \
     1000, &metricListener::goalCallback, &ml);
-  ros::Subscriber currentSub = nh.subscribe("/current", \
+  ros::Subscriber currentSub = nh->subscribe("/current", \
     1000, &metricListener::currentsCallback, &ml);
   tf::TransformListener listener;
   
@@ -392,7 +408,7 @@ int main(int argc, char** argv) {
   listener.waitForTransform(map_frame, robot_frame, \
     ros::Time::now(), ros::Duration(60.0));
   
-  while (nh.ok()){
+  while (nh->ok()){
     tf::StampedTransform transform;
     try {
       listener.lookupTransform(map_frame, robot_frame, ros::Time(0), transform);
