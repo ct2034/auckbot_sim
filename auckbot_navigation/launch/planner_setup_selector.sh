@@ -2,7 +2,7 @@
 # planner setup selector
 
 PS3='Please enter your choice: '
-options=("NavFN" "Carrot Planner" "Global Planner Grid" "Global Planner No Grid")
+options=("NavFN" "Carrot Planner" "Global Planner Grid" "Global Planner No Grid" "Opti Planner")
 select opt in "${options[@]}"
 do
     case $opt in
@@ -25,8 +25,14 @@ do
             break
             ;;
         "Global Planner No Grid")
-			export MB_BASE_GLOBAL_PLANNER='global_planner/GlobalPlanner'
-			export MB_USE_GRID_PATH='false'
+            export MB_BASE_GLOBAL_PLANNER='global_planner/GlobalPlanner'
+            export MB_USE_GRID_PATH='false'
+            echo "planner: $MB_BASE_GLOBAL_PLANNER, grid: $MB_USE_GRID_PATH"
+            break
+            ;;
+        "Opti Planner")
+            export MB_BASE_GLOBAL_PLANNER='opti_planner/OptiPlanner'
+            export MB_USE_GRID_PATH='N/A'
             echo "planner: $MB_BASE_GLOBAL_PLANNER, grid: $MB_USE_GRID_PATH"
             break
             ;;
