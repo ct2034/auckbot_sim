@@ -88,10 +88,10 @@ void CurrentPub::velocityCallback(const geometry_msgs::Twist& speedMsg)
   
   auckbot_gazebo::MotorCurrents currentMsg;
   currentMsg.time = _now;
-  currentMsg.current1 = currents[0];
-  currentMsg.current2 = currents[1];
-  currentMsg.current3 = currents[2];
-  currentMsg.current4 = currents[3];
+  currentMsg.motor_1 = currents[0];
+  currentMsg.motor_2 = currents[1];
+  currentMsg.motor_3 = currents[2];
+  currentMsg.motor_4 = currents[3];
   
   publisher.publish(currentMsg);
   timeLast = _now;

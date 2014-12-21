@@ -294,7 +294,7 @@ void metricListener::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) 
 }
 
 void metricListener::currentsCallback(const auckbot_gazebo::MotorCurrents msg) {
-  float currents = msg.current1 + msg.current2 + msg.current3 + msg.current4;
+  float currents = msg.motor_1 + msg.motor_2 + msg.motor_3 + msg.motor_4;
   metrics[2].addValue( currents * metrics[2].passedTime(msg.time) );
 }
 

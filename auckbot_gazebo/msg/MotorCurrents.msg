@@ -1,5 +1,6 @@
 time time
-float32 current1
-float32 current2
-float32 current3
-float32 current4
+float32 main
+float32 motor_1
+float32 motor_2
+float32 motor_3
+float32 motor_4

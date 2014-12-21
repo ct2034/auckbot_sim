@@ -10,6 +10,7 @@ find_package(catkin REQUIRED COMPONENTS
   auckbot_gazebo
   geometry_msgs
   move_base_msgs
+  cob_phidgets
   roscpp
   tf
 )
@@ -32,6 +33,7 @@ include_directories(
 
 add_executable(nav_analysis src/nav_analysis.cpp)
 add_executable(automatron src/automatron.cpp)
+add_executable(current_msmt src/current_msmt.cpp)
 
 MESSAGE( ">> MongoClient_LIBRARIES: " ${MongoClient_LIBRARIES} )
 
@@ -42,5 +44,9 @@ target_link_libraries(nav_analysis
 )
 
 target_link_libraries(automatron
+  ${catkin_LIBRARIES}
+)
+
+target_link_libraries(current_msmt
   ${catkin_LIBRARIES}
 )
