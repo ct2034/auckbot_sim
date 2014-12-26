@@ -35,6 +35,8 @@ add_executable(nav_analysis src/nav_analysis.cpp)
 add_executable(automatron src/automatron.cpp)
 add_executable(current_msmt src/current_msmt.cpp)
 
+add_dependencies(current_msmt auckbot_gazebo)
+
 MESSAGE( ">> MongoClient_LIBRARIES: " ${MongoClient_LIBRARIES} )
 
 target_link_libraries(nav_analysis

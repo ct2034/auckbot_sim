@@ -2,9 +2,10 @@ cmake_minimum_required(VERSION 2.8.3)
 project(auckbot_gazebo)
 
 find_package(catkin REQUIRED COMPONENTS
-  gazebo_ros
   roscpp
+  std_msgs
   message_generation
+  gazebo_ros
 )
 
 add_message_files(
@@ -15,6 +16,8 @@ add_message_files(
 generate_messages(
   DEPENDENCIES
   std_msgs
+#  auckbot_gazebo
+#  message_generation
 )
 
 ## DEPENDS: system dependencies of this project that dependent projects also need
@@ -34,3 +37,6 @@ target_link_libraries(
   current_pub
   ${catkin_LIBRARIES}
 )
+
+add_dependencies(current_pub ${PROJECT_NAME}_generate_messages_cpp ${catkin_EXPORTED_TARGETS})
+
