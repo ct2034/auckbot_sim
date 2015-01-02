@@ -7,10 +7,10 @@
    
   <!--- kinect -> laser -->
 	<node name="depthimage_to_laserscan" pkg="depthimage_to_laserscan" type="depthimage_to_laserscan" > 
-    <remap from="image" to="/kinect/depth/image_raw"/>
-    <remap from="camera_info" to="/kinect/depth/image_raw"/>
-    <param name="output_frame_id" type="string" value="kinect_link"/>
-  </node>
+      <remap from="image" to="/kinect/depth/image_raw"/>
+      <remap from="camera_info" to="/kinect/depth/image_raw"/>
+      <param name="output_frame_id" type="string" value="kinect_link"/>
+    </node>
     
 	<!--- Run map_server -->
 	<node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)"/>
