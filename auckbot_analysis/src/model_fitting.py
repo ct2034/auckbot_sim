@@ -18,17 +18,19 @@ class ModelFitting:
         self.velocityTopic = '/cmd_vel'
         self.currents = []
         self.velocitys = []
+        self.accelerations = []
         self.times = []
         self.maxCurrents = [0, 0, 0, 0, 0]
         self.maxVelocitys = [0, 0, 0]
         self.waiting = 0
         self.maxWaiting = 1000000
         self.messagesRecieved = False
-        self.starttime = rospy.Time.now()
+        self.starttime = self.toSec(rospy.Time.now())
         self.rate = 1 # every x seconds
         self.rateDenom = 1E4
         self.bufferCurrents = {0: [0, 0, 0, 0, 0]}
         self.bufferVelocitys = {0: [0, 0, 0]}
+        self.bufferAccelerations = {0: [0, 0, 0]}
         self.lockCurrents = False
         self.lockVelocitys = False
         
@@ -63,6 +65,11 @@ class ModelFitting:
                     self.currents.append(lastval)
                 elif length is 3: # velocity
                     self.velocitys.append(lastval)
+                    # acceleration
+                    lastacc = self.bufferAccelerations[self.bufferAccelerations.keys()[0]]
+                    self.accelerations.append(lastacc)
+                    self.bufferAccelerations.clear()
+                    self.bufferAccelerations[starttime] = lastacc
             buffer.clear()
             buffer[starttime] = lastval
         elif len(buffer.keys()) > 1:
@@ -95,8 +102,27 @@ class ModelFitting:
                         rospy.loginfo("mean currents: " + str(temp.tolist()))
                 elif length is 3: # velocity
                     self.velocitys.append(temp.tolist())
+                    # acceleration
+                    totalduration = 0
+                    temp = 0
+                    lasttime = self.bufferAccelerations.keys()[0]
+                    for key in self.bufferAccelerations.keys():
+                        if key != lasttime:
+                            duration = key-lasttime
+                            if duration < 0:
+                                duration = -1 * duration
+                            onetemp = duration * np.array(self.bufferAccelerations[lasttime])
+                            temp += onetemp
+                            totalduration += duration
+                            lasttime = key
+                    temp /= totalduration
+                    lastacc = self.bufferAccelerations[lasttime]
+                    self.bufferAccelerations.clear()
+                    self.bufferAccelerations[starttime+self.rate] = lastacc
+                    self.accelerations.append(temp.tolist())
                     if DEBUG:
                         rospy.loginfo("mean velocitys: " + str(temp.tolist()))
+                        rospy.loginfo("mean accelerations: " + str(temp.tolist()))
             else:
                 rospy.logerr("makeMean called with incorrect buffer type")
         else:
@@ -119,22 +145,24 @@ class ModelFitting:
         self.waiting = 0
         if DEBUG:
             rospy.loginfo(self.toString (msg))
-        self.save(msg)
+        self.save(msg, self.now())
     
     def toString(self, msg):
         if isinstance(msg, MotorCurrents):
-            return "{:.1f}s :: main: {:.2f}A, 1: {:.2f}A, 2: {:.2f}A, 3: {:.2f}A, 4: {:.2f}A".format(self.timeSinceStart(), msg.main, msg.motor_1, msg.motor_2, msg.motor_3, msg.motor_4)
+            return ("{:.1f}s :: main: {:.2f}A, 1: {:.2f}A, 2: {:.2f}A, 3: {:.2f}A, 4: {:.2f}A"
+                    .format(self.now(), msg.main, msg.motor_1, msg.motor_2, msg.motor_3, msg.motor_4))
         elif isinstance(msg, Twist):
-            return "x: {:.2f}, y: {:.2f}, th: {:.2f}".format(msg.linear.x, msg.linear.x, msg.angular.z)
+            return ("x: {:.2f}, y: {:.2f}, th: {:.2f}"
+                    .format(msg.linear.x, msg.linear.x, msg.angular.z))
 
-    def save(self, msg):
+    def save(self, msg, timenow):
         l = self.serialize(msg)
         if isinstance(msg, MotorCurrents): # current
             # check lock
             while self.lockCurrents:
                 rospy.sleep(self.rate/self.rateDenom)
             self.lockCurrents = True
-            self.bufferCurrents[self.now()] = l
+            self.bufferCurrents[timenow] = l
             # unlock
             self.lockCurrents = False
             # ---------
@@ -146,7 +174,15 @@ class ModelFitting:
             while self.lockVelocitys:
                 rospy.sleep(self.rate/self.rateDenom)
             self.lockVelocitys = True 
-            self.bufferVelocitys[self.now()] = l
+            self.bufferVelocitys[timenow] = l
+            # acceleration
+            lastentry = self.bufferVelocitys.keys()[-1]
+            speeddiff = np.array(l) - np.array(self.bufferVelocitys[lastentry])
+            duration = timenow - lastentry
+            if duration == 0:
+                self.bufferAccelerations[timenow] = [0., 0., 0.]
+            else:
+                self.bufferAccelerations[timenow] = (speeddiff / duration).tolist()
             # unlock
             self.lockVelocitys = False            
             # ---------
@@ -160,26 +196,23 @@ class ModelFitting:
         elif isinstance(msg, Twist):
             return [msg.linear.x, msg.linear.y, msg.angular.z]
 
-    def timeSince(self, time):
-        delta = rospy.Time.now() - time
-        return float(delta.to_sec()) + delta.to_nsec() / 10E9
-
-    def timeSinceStart(self):
-        return self.timeSince(self.starttime)
-
     def now(self):
-        return self.toSec(rospy.Time.now())
+        return self.toSec(rospy.Time.now()) - self.starttime
 
     def toSec(self, time):
         return float(time.to_sec()) + time.to_nsec() / 10E9
 
     def toFile(self):
         name = (str(datetime.datetime.now())).replace(" ", "_") + ".mat"
-        sio.savemat(name, {'time': self.times, 'current': self.currents, 'velocity': self.velocitys})
+        sio.savemat(name, 
+                    {'time': self.times,
+                    'current': self.currents,
+                    'velocity': self.velocitys,
+                    'acceleration': self.accelerations})
 
     def printData(self):
         # currents
-        plt.subplot(2, 1, 1)
+        plt.subplot(3, 1, 1)
         c0, = plt.plot(np.array(self.times), np.array(self.currents)[:,0], '-')
         c1, = plt.plot(np.array(self.times), np.array(self.currents)[:,1], '-')
         c2, = plt.plot(np.array(self.times), np.array(self.currents)[:,2], '-')
@@ -187,7 +220,13 @@ class ModelFitting:
         c4, = plt.plot(np.array(self.times), np.array(self.currents)[:,4], '-')
         plt.legend((c0, c1, c2, c3, c4), ('main', 'motor 1', 'motor 2', 'motor 3', 'motor 4'))
         # velocitys
-        plt.subplot(2, 1, 2)
+        plt.subplot(3, 1, 2)
+        v0, = plt.plot(np.array(self.times), np.array(self.accelerations)[:,0], '-')
+        v1, = plt.plot(np.array(self.times), np.array(self.accelerations)[:,1], '-')
+        v2, = plt.plot(np.array(self.times), np.array(self.accelerations)[:,2], '-')
+        plt.legend((v0, v1, v2), (r'$a_x$', r'$a_y$', r'$a_\theta$'))
+        # velocitys
+        plt.subplot(3, 1, 3)
         v0, = plt.plot(np.array(self.times), np.array(self.velocitys)[:,0], '-')
         v1, = plt.plot(np.array(self.times), np.array(self.velocitys)[:,1], '-')
         v2, = plt.plot(np.array(self.times), np.array(self.velocitys)[:,2], '-')
@@ -196,9 +235,10 @@ class ModelFitting:
         plt.show()
 
     def fixData(self):
-        l = min(len(self.currents), len(self.velocitys), len(self.times))
+        l = min(len(self.currents), len(self.velocitys), len(self.accelerations), len(self.times))
         self.currents = (np.array(self.currents)[1:l,:]).tolist()
         self.velocitys = (np.array(self.velocitys)[1:l,:]).tolist()
+        self.accelerations = (np.array(self.accelerations)[1:l,:]).tolist()
         self.times = (np.array(self.times)[1:l]).tolist()
 
 if __name__ == '__main__':
