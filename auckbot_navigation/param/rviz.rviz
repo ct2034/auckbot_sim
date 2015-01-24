@@ -7,6 +7,7 @@ Panels:
         - /Global Options1
         - /Status1
         - /TF1/Frames1
+        - /Path2
       Splitter Ratio: 0.583643
     Tree Height: 411
   - Class: rviz/Selection
@@ -82,10 +83,10 @@ Visualization Manager:
       Class: rviz/Map
       Color Scheme: map
       Draw Behind: false
-      Enabled: true
+      Enabled: false
       Name: Map
       Topic: /move_base/GlobalPlanner/potential
-      Value: true
+      Value: false
     - Alpha: 0.5
       Class: rviz/Map
       Color Scheme: map
@@ -111,29 +112,19 @@ Visualization Manager:
       Topic: /move_base/global_costmap/costmap
       Value: true
     - Class: rviz/TF
-      Enabled: true
+      Enabled: false
       Frame Timeout: 15
       Frames:
         All Enabled: false
-        base_link:
-          Value: true
-        kinect_link:
-          Value: true
-        map:
-          Value: true
-        odom:
-          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
       Show Axes: true
       Show Names: true
       Tree:
-        map:
-          odom:
-            {}
+        {}
       Update Interval: 0
-      Value: true
+      Value: false
     - Class: rviz/Camera
       Enabled: true
       Image Rendering: background and overlay
@@ -149,6 +140,7 @@ Visualization Manager:
         LaserScan: true
         Map: true
         Path: true
+        PoseArray: true
         RobotModel: true
         TF: true
         Value: false
@@ -191,7 +183,7 @@ Visualization Manager:
       Use Fixed Frame: true
       Use rainbow: true
       Value: false
-    - Alpha: 0.8
+    - Alpha: 0.7
       Class: rviz/RobotModel
       Collision Enabled: false
       Enabled: true
@@ -214,17 +206,32 @@ Visualization Manager:
       Name: RobotModel
       Robot Description: robot_description
       TF Prefix: ""
-      Update Interval: 0
+      Update Interval: 1
       Value: true
       Visual Enabled: true
-    - Alpha: 1
-      Buffer Length: 1
+    - Alpha: 0.5
+      Buffer Length: 2
       Class: rviz/Path
-      Color: 0; 166; 255
+      Color: 255; 0; 0
       Enabled: true
       Name: Path
-      Topic: /move_base/TrajectoryPlannerROS/global_plan
+      Topic: /move_base/TrajectoryPlannerROS/local_plan
       Value: true
+    - Alpha: 0.5
+      Buffer Length: 2
+      Class: rviz/Path
+      Color: 255; 170; 0
+      Enabled: true
+      Name: Path
+      Topic: /move_base/GlobalPlanner/better_plan
+      Value: true
+    - Arrow Length: 0.2
+      Class: rviz/PoseArray
+      Color: 255; 25; 0
+      Enabled: false
+      Name: PoseArray
+      Topic: /particlecloud
+      Value: false
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -248,7 +255,7 @@ Visualization Manager:
   Value: true
   Views:
     Current:
-      Angle: -2.98023e-08
+      Angle: 2.34693e-07
       Class: rviz/TopDownOrtho
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.06
@@ -257,11 +264,11 @@ Visualization Manager:
         Value: false
       Name: Current View
       Near Clip Distance: 0.01
-      Scale: 39.7986
+      Scale: 41.1248
       Target Frame: <Fixed Frame>
       Value: TopDownOrtho (rviz)
-      X: 2.83109
-      Y: 1.91041
+      X: 2.75771
+      Y: 2.53894
     Saved: ~
 Window Geometry:
   Camera:
@@ -281,5 +288,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1366
-  X: 0
-  Y: 25
+  X: 153
+  Y: 772

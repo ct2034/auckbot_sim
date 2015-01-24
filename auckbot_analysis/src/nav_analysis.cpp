@@ -279,12 +279,16 @@ void metricListener::goalCallback(const move_base_msgs::MoveBaseActionGoal msg) 
   metrics[1].resetValueAndTime();
   metrics[2].resetValueAndTime();
   char params[STRL_DESC];
+  
   std::string* par_base_global_planner = new std::string();
   getPar((char *) "/move_base/base_global_planner", par_base_global_planner);
-  std::string* par_use_grid_path = new std::string();
-  getPar((char *) "/move_base/use_grid_path", par_use_grid_path);
-  sprintf( params, "MB_USE_GRID_PATH: %s \nMB_USE_GRID_PATH: %s \n", \
-    par_base_global_planner->c_str(), par_use_grid_path->c_str());
+  std::string* par_base_local_planner = new std::string();
+  getPar((char *) "/move_base/base_local_planner", par_base_local_planner);
+  // std::string* par_use_grid_path = new std::string();
+  // getPar((char *) "/move_base/use_grid_path", par_use_grid_path);
+
+  sprintf( params, "base_global_planner: %s \nbase_local_planner: %s \n", \
+    par_base_global_planner->c_str(), par_base_local_planner->c_str());
   metrics[4].setSValue(params);
   startTime->~ptime();
   startTime = new pt::ptime(ros::Time::now().toBoost());
