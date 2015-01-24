@@ -14,11 +14,14 @@ Auckbot is distributed in the hope that it will be useful, but WITHOUT ANY WARRA
 You should have received a copy of the GNU General Public License along with Auckbot. If not, see http://www.gnu.org/licenses/.             
 ***************************************************/
 
+#define DEBUG false
+
 // ros
 #include "ros/ros.h"
 #include "nav_msgs/Path.h"
 #include "geometry_msgs/PoseStamped.h"
 #include "std_msgs/Header.h"
+//#include "tf2/Quaternion.h"
 
 // cgal
 #include <CGAL/Cartesian.h>
@@ -49,6 +52,7 @@ class PathOptimizer
     int i, length;
     std::vector<geometry_msgs::PoseStamped> path;
     geometry_msgs::PoseStamped curve[CURVE];
+    Kernel::Point_2 lastPoint;
 
   public:
     PathOptimizer(float _min_radius);
@@ -66,12 +70,13 @@ class PathOptimizer
 PathOptimizer::PathOptimizer(float _min_radius)
 {
   min_radius = _min_radius;
+  lastPoint = Kernel::Point_2 (0.0, 0.0);
 }
   
 void PathOptimizer::pathCallback(const nav_msgs::Path& msg)
 {
   length = (int) msg.poses.size();
-  ROS_INFO("a path, l: %d", length);
+  if(DEBUG) ROS_INFO("a path, l: %d", length);
 
   // CALC
   i = 0;
@@ -88,7 +93,7 @@ void PathOptimizer::pathCallback(const nav_msgs::Path& msg)
   out_msg.poses = path;
 
   publisher.publish(out_msg);
-  ROS_INFO("%s", "published");
+  if(DEBUG) ROS_INFO("%s", "published");
 
   clearPath();
 }
@@ -108,7 +113,7 @@ void PathOptimizer::radiusCheck(geometry_msgs::PoseStamped pose)
   if (i == 0) // first point
   {
     // nothing to do with this one
-    ROS_INFO("%s", "Starting radius check");
+    if(DEBUG) ROS_INFO("%s", "Starting radius check");
   }
   else if(i > 0 & i < CURVE) // second point
   {
@@ -128,7 +133,7 @@ void PathOptimizer::radiusCheck(geometry_msgs::PoseStamped pose)
       {
         Circle_2 circ = Circle_2(p, q, r);
         float radius = sqrt(circ.squared_radius());
-        // ROS_INFO("r: %f", radius);
+        // if(DEBUG) ROS_INFO("r: %f", radius);
 
         if(radius < min_radius)
         {
@@ -143,7 +148,7 @@ void PathOptimizer::radiusCheck(geometry_msgs::PoseStamped pose)
           Kernel::Point_2 q_new = circ.center() + ( scale * v );
           curve[im1%CURVE] = point22PoseStamped(q_new, pose.header);
 
-          ROS_INFO("l: %f", radius);
+          if(DEBUG) ROS_INFO("l: %f", radius);
         }  
       }
     }
@@ -181,17 +186,17 @@ Kernel::Point_2 PathOptimizer::poseStamped2Point2(geometry_msgs::PoseStamped pos
 
 geometry_msgs::PoseStamped PathOptimizer::point22PoseStamped(Kernel::Point_2 point, std_msgs::Header h)
 {
-    geometry_msgs::PoseStamped pose;
-    pose.header = h;
-    pose.pose.position.x = point.x();
-    pose.pose.position.y = point.y();
-    pose.pose.position.z = 0.0;
-    pose.pose.orientation.x = 0.0;
-    pose.pose.orientation.y = 0.0;
-    pose.pose.orientation.z = 0.0;
-    pose.pose.orientation.w = 1.0;
+  Kernel::Vector_2 dir = Kernel::Vector_2(lastPoint, point);
 
-    return pose;
+  geometry_msgs::PoseStamped pose;
+  pose.header = h;
+  pose.pose.position.x = point.x();
+  pose.pose.position.y = point.y();
+  pose.pose.position.z = 0.0;
+  //pose.pose.orientation = tf2::Quaternion(0, 0, 0);
+
+  lastPoint = point;
+  return pose;
 }
 
 // MAIN
@@ -210,7 +215,7 @@ int main(int argc, char **argv)
   ros::Subscriber   sub = n.subscribe("/move_base/GlobalPlanner/plan", 10,
     &PathOptimizer::pathCallback, &po);
   
-  ROS_INFO("%s", "...");
+  if(DEBUG) ROS_INFO("%s", "...");
 
   ros::spin();
 
