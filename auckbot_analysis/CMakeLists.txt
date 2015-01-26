@@ -13,10 +13,22 @@ find_package(catkin REQUIRED COMPONENTS
   cob_phidgets
   roscpp
   tf
+  std_msgs
+  message_generation
 )
 find_package(Boost COMPONENTS system filesystem thread)
 find_package(OpenSSL)
 find_package(MongoClient REQUIRED)
+
+add_message_files(
+  FILES
+  ModelTheta.msg
+)
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
 
 catkin_package(
    CATKIN_DEPENDS auckbot_gazebo geometry_msgs move_base_msgs roscpp tf

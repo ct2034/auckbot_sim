@@ -48,7 +48,16 @@
 
 #include <pcl_conversions/pcl_conversions.h>
 
+#include "auckbot_analysis/ModelTheta.h"
+
 namespace edwa_local_planner {
+  void callback(const auckbot_analysis::ModelTheta msg);
+
+  void callback(const auckbot_analysis::ModelTheta msg)
+  {
+    ROS_INFO("callback");
+  }
+
   void EDWAPlanner::reconfigure(EDWAPlannerConfig &config)
   {
 
@@ -126,7 +135,15 @@ namespace edwa_local_planner {
       alignment_costs_(planner_util->getCostmap())
   {
     ros::NodeHandle private_nh("~/" + name);
+    //ros::NodeHandle global_nh(name);
 
+    ros::Subscriber sub = private_nh.subscribe(
+      "model_theta", \
+      10, \
+      callback);
+      // &base_local_planner::EnergyCostFunction::thetaCallback, \
+      // &energy_costs_);
+  
     goal_front_costs_.setStopOnFailure( false );
     alignment_costs_.setStopOnFailure( false );
 

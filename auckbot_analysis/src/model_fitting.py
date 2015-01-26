@@ -8,6 +8,7 @@ import datetime
 
 from auckbot_gazebo.msg import MotorCurrents
 from geometry_msgs.msg import Twist
+from auckbot_analysis.msg import ModelTheta
 
 DEBUG = False
 
@@ -22,25 +23,48 @@ class ModelFitting:
         self.times = []
         self.maxCurrents = [0, 0, 0, 0, 0]
         self.maxVelocitys = [0, 0, 0]
+        self.maxAccelerations = [0, 0, 0]
         self.waiting = 0
         self.maxWaiting = 1000000
         self.messagesRecieved = False
         self.starttime = self.toSec(rospy.Time.now())
-        self.rate = 1 # every x seconds
+        self.rate = .1 # every x seconds
         self.rateDenom = 1E4
         self.bufferCurrents = {0: [0, 0, 0, 0, 0]}
         self.bufferVelocitys = {0: [0, 0, 0]}
         self.bufferAccelerations = {0: [0, 0, 0]}
         self.lockCurrents = False
         self.lockVelocitys = False
-        
-        rospy.Subscriber(self.currentTopic, MotorCurrents, self.callback)
-        rospy.Subscriber(self.velocityTopic, Twist, self.callback)
+        self.theta = np.array([.2, .2, .2, .2, .2, .2, .2])
+        self.std = np.array([1, 100, 100, 100, 10000, 10000, 10000])
+        self.Jmeanl = 1000
+        self.Js = [0] * self.Jmeanl
+        self.learnit = 0
+        pubRate = 10
+
+        rospy.Subscriber(
+            self.currentTopic, 
+            MotorCurrents, 
+            self.callback)
+        rospy.Subscriber(
+            self.velocityTopic, 
+            Twist, 
+            self.callback)
+        rospy.Timer(
+            rospy.Duration(self.rate), 
+            self.timerCallback)
+        self.pub = rospy.Publisher(
+            '/move_base/EDWAPlannerROS/model_theta', 
+            ModelTheta, 
+            queue_size=10)
+        rospy.Timer(
+            rospy.Duration(pubRate), 
+            self.publisherCallback)
         rospy.loginfo("initialized")
-        rospy.Timer(rospy.Duration(self.rate), self.timerCallback)
 
     def timerCallback(self, event):
         timerec = self.now()
+        oldl = len(self.currents) + len(self.velocitys)
         if self.messagesRecieved:
             while self.lockCurrents:
                 rospy.sleep(self.rate/self.rateDenom)
@@ -54,6 +78,27 @@ class ModelFitting:
             self.lockVelocitys = False
             if self.bufferVelocitys.keys()[0] > 0:
                 self.times.append(timerec)
+            if (self.hasData(self.currents) & 
+                self.hasData(self.velocitys) & 
+                self.hasData(self.accelerations)):
+                self.learnIteration(self.currents[-1], 
+                    self.velocitys[-1],
+                    self.accelerations[-1])
+                # self.learnIteration([.2, .3, .3, .3, .3],
+                #     [800, 800, 800], [200, 200, 200])
+
+    def publisherCallback(self, event):
+        if True: #(self.learnit > self.Jmeanl/5) & (self.meanJ() < .5):
+            msg = ModelTheta()
+            msg.theta0 = self.theta[0] / self.std[0]
+            msg.theta1 = self.theta[1] / self.std[1]
+            msg.theta2 = self.theta[2] / self.std[2]
+            msg.theta3 = self.theta[3] / self.std[3]
+            msg.theta4 = self.theta[4] / self.std[4]
+            msg.theta5 = self.theta[5] / self.std[5]
+            msg.theta6 = self.theta[6] / self.std[6]
+            self.pub.publish(msg)
+            rospy.loginfo("published ...") 
 
     def makeMean(self, buffer, starttime):
         if len(buffer.keys()) == 1:
@@ -131,13 +176,10 @@ class ModelFitting:
     def waitingIt(self):
         self.waiting = self.waiting+1
         if (self.waiting > self.maxWaiting) and self.messagesRecieved:
-            #rospy.loginfo("max currents: " + str(self.maxCurrents))
-            #rospy.loginfo("max velocitys: " + str(self.maxVelocitys))
+            rospy.loginfo("max velocitys: " + str(max(self.velocitys)))
+            rospy.loginfo("max accelerations: " + str(max(self.accelerations)))
             rospy.logwarn("no message recieved for quite some time")
             self.messagesRecieved = False
-            self.fixData()
-            self.toFile()
-            self.printData()
         return self.messagesRecieved
         
     def callback(self, msg):
@@ -240,6 +282,42 @@ class ModelFitting:
         self.velocitys = (np.array(self.velocitys)[1:l,:]).tolist()
         self.accelerations = (np.array(self.accelerations)[1:l,:]).tolist()
         self.times = (np.array(self.times)[1:l]).tolist()
+
+    def learnIteration(self, yin, Vin, Ain):
+        # params
+        alpha = .003
+        historyl = self.Jmeanl
+
+        # data
+        yarr = np.array(yin) + .01
+        y = np.sum(yarr[1:5])
+        # print y
+        X = np.array([1] + np.abs(Vin).tolist() + Ain) / self.std
+        # print ["%1.2e" % v for v in X]
+
+        # cost
+        J = ((np.dot(X, np.transpose(self.theta)) - y) ** 2) / 2
+        # print J
+        self.Js[self.learnit % historyl] = J
+        print self.meanJ()
+
+        # grad
+        # print np.dot(X, np.transpose(self.theta))
+        # print np.dot(X, np.transpose(self.theta)) - y
+        grad = (np.dot(X, np.transpose(self.theta)) - y) * X
+        # print ["%1.2e" % v for v in grad]
+        self.theta -= alpha * grad
+        print ["%1.2e" % v for v in self.theta]
+
+        # iterate ..
+        self.learnit += 1
+        # print "---------------"
+
+    def hasData(self, anArray):
+        return len(anArray) > 0
+
+    def meanJ(self):
+        return sum(self.Js) / min(self.learnit, self.Jmeanl)
 
 if __name__ == '__main__':
     mf = ModelFitting()   
