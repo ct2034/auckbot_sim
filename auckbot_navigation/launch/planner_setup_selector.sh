@@ -2,7 +2,7 @@
 # planner setup selector
 
 PS3='Please enter your choice: '
-options=("global: NavFN" "global: Carrot Planner" "global: Global Planner Grid" "global: Opti Planner" "local: EDWA Planner" "local: Trajectory Planner")
+options=("global: NavFN" "global: Carrot Planner" "global: Global Planner Grid" "global: Opti Planner" "local: EDWA Planner" "local: DWA Planner")
 select opt in "${options[@]}"
 do
     case $opt in
@@ -35,7 +35,7 @@ do
             echo "local planner EDWA: $MB_BASE_LOCAL_PLANNER_E"
             break
             ;;
-        "local: Trajectory Planner")
+        "local: DWA Planner")
             export MB_BASE_LOCAL_PLANNER_E='false'
             echo "local planner EDWA: $MB_BASE_LOCAL_PLANNER_E"
             break

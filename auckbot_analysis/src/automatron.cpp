@@ -20,11 +20,11 @@ You should have received a copy of the GNU General Public License along with Auc
 #include <move_base_msgs/MoveBaseActionResult.h>
 #include <geometry_msgs/PoseStamped.h>
 
-#define NO_TRIPS_P_CONFIG	10
-#define NO_GOALS			2
-//#define NO_CONFIGS			4 
+#define NO_TRIPS	20
+#define NO_GOALS	2
+//#define NO_CONFIGS	4 
 
-#define WAIT_T				5 //s
+#define WAIT_T		5 //s
 
 float x[NO_GOALS];
 float y[NO_GOALS];
@@ -41,7 +41,7 @@ void sendNextGoal(void);
 void sendNextGoal(void) {
 	ROS_INFO("new goal (%d)", i);
 
-	if(i>NO_TRIPS_P_CONFIG) ros::shutdown();
+	if(i>NO_TRIPS) ros::shutdown();
 
 	for (int iw = WAIT_T; iw>=0; iw--) {
 		ROS_INFO("waiting ... (%d)", iw);

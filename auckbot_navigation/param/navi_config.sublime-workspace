@@ -399,15 +399,27 @@
 	"build_system": "Packages/User/ROS.sublime-build",
 	"command_palette":
 	{
-		"height": 117.0,
+		"height": 301.0,
 		"selected_items":
 		[
+			[
+				"stat",
+				"Git: Status"
+			],
+			[
+				"diff",
+				"Git: Diff All"
+			],
+			[
+				"comm",
+				"Git: Commit"
+			],
 			[
 				"git add",
 				"Git: Add..."
 			],
 			[
-				"stat",
+				"git",
 				"Git: Status"
 			],
 			[
@@ -436,6 +448,7 @@
 	},
 	"file_history":
 	[
+		"/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_navigation/param/COMMIT_EDITMSG.COMMIT_EDITMSG",
 		"/home/ch/ros/sim_ws/src/navigation/base_local_planner/include/base_local_planner/simple_trajectory_generator.h",
 		"/home/ch/ros/sim_ws/src/navigation/.gitignore",
 		"/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_analysis/src/nav_analysis.cpp",
@@ -562,8 +575,7 @@
 		"/home/ch/.sublimeText2/Pristine Packages/Color Scheme - Default.sublime-package",
 		"/home/ch/ros/sim_ws/src/auckbot_sim/opti_planner/src/opti_planner.cpp",
 		"/home/ch/ros/sim_ws/src/auckbot_sim/opti_planner/src/planner_core.cpp",
-		"/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_teleop/package.xml",
-		"/media/Files/text/!!Studium/Machine Learning (coursera)/exercises/mlclass-ex4/randInitializeWeights.m"
+		"/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_teleop/package.xml"
 	],
 	"find":
 	{
@@ -805,8 +817,8 @@
 						"selection":
 						[
 							[
-								191,
-								191
+								242,
+								242
 							]
 						],
 						"settings":
@@ -858,6 +870,10 @@
 	"output.exec":
 	{
 		"height": 194.0
+	},
+	"output.git":
+	{
+		"height": 112.0
 	},
 	"replace":
 	{

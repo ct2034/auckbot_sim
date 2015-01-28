@@ -4,6 +4,10 @@
 		"selected_items":
 		[
 			[
+				"EDWA",
+				"EDWAPlanner"
+			],
+			[
 				"E",
 				"E_traj"
 			],
@@ -372,46 +376,6 @@
 	"buffers":
 	[
 		{
-			"file": "/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_navigation/param/base_local_planner_params.yaml",
-			"settings":
-			{
-				"buffer_size": 894,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_navigation/param/local_costmap_params.yaml",
-			"settings":
-			{
-				"buffer_size": 242,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_navigation/param/costmap_common_params.yaml",
-			"settings":
-			{
-				"buffer_size": 772,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/ch/ros/sim_ws/src/navigation/base_local_planner/include/base_local_planner/trajectory_cost_function.h",
-			"settings":
-			{
-				"buffer_size": 2928,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/ch/ros/sim_ws/src/navigation/base_local_planner/src/trajectory.cpp",
-			"settings":
-			{
-				"buffer_size": 3004,
-				"line_ending": "Unix"
-			}
-		},
-		{
 			"file": "/home/ch/ros/sim_ws/src/navigation/base_local_planner/src/simple_scored_sampling_planner.cpp",
 			"settings":
 			{
@@ -439,7 +403,7 @@
 			"file": "/home/ch/ros/sim_ws/src/navigation/base_local_planner/include/base_local_planner/energy_cost_function.h",
 			"settings":
 			{
-				"buffer_size": 3072,
+				"buffer_size": 3177,
 				"line_ending": "Unix"
 			}
 		},
@@ -447,7 +411,7 @@
 			"file": "/home/ch/ros/sim_ws/src/navigation/base_local_planner/src/energy_cost_function.cpp",
 			"settings":
 			{
-				"buffer_size": 5172,
+				"buffer_size": 5299,
 				"line_ending": "Unix"
 			}
 		},
@@ -463,31 +427,15 @@
 			"file": "src/edwa_planner.cpp",
 			"settings":
 			{
-				"buffer_size": 16273,
+				"buffer_size": 16458,
 				"line_ending": "Unix"
 			}
 		},
 		{
-			"file": "/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_analysis/src/model_fitting.py",
+			"file": "/home/ch/ros/sim_ws/src/navigation/global_planner/src/planner_core.cpp",
 			"settings":
 			{
-				"buffer_size": 10595,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_analysis/src/nav_analysis.cpp",
-			"settings":
-			{
-				"buffer_size": 13028,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "include/edwa_local_planner/edwa_planner_ros.h",
-			"settings":
-			{
-				"buffer_size": 5798,
+				"buffer_size": 16611,
 				"line_ending": "Unix"
 			}
 		},
@@ -503,7 +451,7 @@
 	"build_system": "Packages/User/ROS.sublime-build",
 	"command_palette":
 	{
-		"height": 117.0,
+		"height": 392.0,
 		"selected_items":
 		[
 			[
@@ -540,6 +488,13 @@
 	},
 	"file_history":
 	[
+		"/home/ch/ros/sim_ws/src/auckbot_sim/edwa_local_planner/include/edwa_local_planner/edwa_planner_ros.h",
+		"/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_navigation/src/path_optimizer.cpp",
+		"/home/ch/ros/sim_ws/src/auckbot_sim/edwa_local_planner/src/edwa_planner_ros.cpp",
+		"/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_analysis/src/current_msmt.cpp",
+		"/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_navigation/param/base_local_planner_params.yaml",
+		"/home/ch/ros/sim_ws/src/navigation/base_local_planner/include/base_local_planner/trajectory_cost_function.h",
+		"/home/ch/ros/sim_ws/src/navigation/base_local_planner/src/trajectory.cpp",
 		"/home/ch/ros/sim_ws/src/navigation/base_local_planner/include/base_local_planner/simple_trajectory_generator.h",
 		"/home/ch/ros/sim_ws/src/navigation/.gitignore",
 		"/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_analysis/src/nav_analysis.cpp",
@@ -570,7 +525,6 @@
 		"/home/ch/ros/sim_ws/src/auckbot_sim/edwa_local_planner/cfg/EDWAPlanner.cfg",
 		"/home/ch/.config/sublime-text-2/Packages/User/Distraction Free.sublime-settings",
 		"/home/ch/MasterThesis/4_doc/plan/wasalexwichtigist.txt",
-		"/home/ch/ros/sim_ws/src/navigation/base_local_planner/include/base_local_planner/trajectory_cost_function.h",
 		"/home/ch/ros/sim_ws/src/navigation/base_local_planner/include/base_local_planner/trajectory_inc.h",
 		"/home/ch/ros/sim_ws/src/navigation/base_local_planner/include/base_local_planner/costmap_model.h",
 		"/home/ch/.config/sublime-text-2/Packages/User/Preferences.sublime-settings",
@@ -583,8 +537,6 @@
 		"/home/ch/ros/sim_ws/src/navigation/base_local_planner/include/base_local_planner/energy_planner_ros.h",
 		"/home/ch/ros/sim_ws/src/navigation/base_local_planner/src/energy_planner.cpp",
 		"/home/ch/ros/sim_ws/src/navigation/base_local_planner/include/base_local_planner/energy_planner.h",
-		"/home/ch/ros/sim_ws/src/navigation/base_local_planner/src/trajectory.cpp",
-		"/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_navigation/param/base_local_planner_params.yaml",
 		"/home/ch/ros/sim_ws/src/auckbot_sim/edwa_local_planner/*/.cpp",
 		"/home/ch/ros_toolbox.sh",
 		"/home/ch/ros/sim_ws/src/navigation/base_local_planner/include/base_local_planner/trajectory_planner_ros.h",
@@ -603,7 +555,6 @@
 		"/home/ch/MasterThesis/3_dev/matlab_modelfitting/printData.m",
 		"/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_navigation/launch/phidgets.launch",
 		"/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_navigation/param/phidgets.yaml",
-		"/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_analysis/src/current_msmt.cpp",
 		"/home/ch/ros/sim_ws/src/navigation/dwa_local_planner/src/dwa_planner_ros.cpp",
 		"/home/ch/ros/sim_ws/src/navigation/dwa_local_planner/src/dwa_planner.cpp",
 		"/home/ch/wasmanmachensollte.txt",
@@ -636,7 +587,6 @@
 		"/home/ch/.config/sublime-text-2/Packages/User/Default (Linux).sublime-keymap",
 		"/home/ch/.config/sublime-text-2/Packages/Default/Default (Linux).sublime-keymap",
 		"/home/ch/!!Studium/3. Semester(MSc) (SS14)/forschungsarbeit ipa/docs/9_ARBEIT/Ausarbeitung_vMarcel/Masterarbeit_MarcelWeber_Ausarbeitung.tex",
-		"/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_navigation/src/path_optimizer.cpp",
 		"/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_gazebo/msg/MotorCurrents.msg",
 		"/opt/ros/hydro/include/tf2/LinearMath/Quaternion.h",
 		"/opt/ros/hydro/share/geometry_msgs/msg/Pose.msg",
@@ -665,9 +615,7 @@
 		"/home/ch/ros/sim_ws/src/auckbot_sim/navigation/global_planner/src/grid_path.cpp",
 		"/home/ch/.sublimeText2/Pristine Packages/Color Scheme - Default.sublime-package",
 		"/home/ch/ros/sim_ws/src/auckbot_sim/opti_planner/src/opti_planner.cpp",
-		"/home/ch/ros/sim_ws/src/auckbot_sim/opti_planner/src/planner_core.cpp",
-		"/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_teleop/package.xml",
-		"/media/Files/text/!!Studium/Machine Learning (coursera)/exercises/mlclass-ex4/randInitializeWeights.m"
+		"/home/ch/ros/sim_ws/src/auckbot_sim/opti_planner/src/planner_core.cpp"
 	],
 	"find":
 	{
@@ -686,6 +634,13 @@
 		"case_sensitive": true,
 		"find_history":
 		[
+			"subscr",
+			"betterplan",
+			"better",
+			"global_pla",
+			"publis",
+			"energy_costs_",
+			"phidgetsCallback",
 			"energy",
 			"ener",
 			"EDWAPlannerConfig",
@@ -806,14 +761,7 @@
 			"\\[..\\]",
 			"linearize",
 			"ser",
-			"serial",
-			"times",
-			"plot",
-			"self.messagesRecieved",
-			"plt.",
-			"debu",
-			"toSe",
-			"keys"
+			"serial"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -840,149 +788,11 @@
 	"groups":
 	[
 		{
-			"selected": 13,
+			"selected": 6,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_navigation/param/base_local_planner_params.yaml",
-					"settings":
-					{
-						"buffer_size": 894,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								869,
-								869
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/YAML/YAML.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 102.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_navigation/param/local_costmap_params.yaml",
-					"settings":
-					{
-						"buffer_size": 242,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								191,
-								191
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/YAML/YAML.tmLanguage",
-							"tab_size": 3,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_navigation/param/costmap_common_params.yaml",
-					"settings":
-					{
-						"buffer_size": 772,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								169,
-								169
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/YAML/YAML.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "/home/ch/ros/sim_ws/src/navigation/base_local_planner/include/base_local_planner/trajectory_cost_function.h",
-					"settings":
-					{
-						"buffer_size": 2928,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2816,
-								2816
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 765.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 4,
-					"file": "/home/ch/ros/sim_ws/src/navigation/base_local_planner/src/trajectory.cpp",
-					"settings":
-					{
-						"buffer_size": 3004,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2205,
-								2205
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 153.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 5,
 					"file": "/home/ch/ros/sim_ws/src/navigation/base_local_planner/src/simple_scored_sampling_planner.cpp",
 					"settings":
 					{
@@ -1010,7 +820,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 6,
+					"buffer": 1,
 					"file": "/home/ch/ros/sim_ws/src/navigation/base_local_planner/src/simple_trajectory_generator.cpp",
 					"settings":
 					{
@@ -1038,7 +848,7 @@
 					"type": "text"
 				},
 				{
-					"buffer": 7,
+					"buffer": 2,
 					"file": "/home/ch/ros/sim_ws/src/navigation/base_local_planner/include/base_local_planner/trajectory.h",
 					"settings":
 					{
@@ -1060,25 +870,25 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 816.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 8,
+					"buffer": 3,
 					"file": "/home/ch/ros/sim_ws/src/navigation/base_local_planner/include/base_local_planner/energy_cost_function.h",
 					"settings":
 					{
-						"buffer_size": 3072,
+						"buffer_size": 3177,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2993,
-								2993
+								2033,
+								2033
 							]
 						],
 						"settings":
@@ -1088,25 +898,25 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 816.0,
+						"translation.y": 333.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 9,
+					"buffer": 4,
 					"file": "/home/ch/ros/sim_ws/src/navigation/base_local_planner/src/energy_cost_function.cpp",
 					"settings":
 					{
-						"buffer_size": 5172,
+						"buffer_size": 5299,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								2500,
-								2500
+								5236,
+								5236
 							]
 						],
 						"settings":
@@ -1116,13 +926,13 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 811.0,
+						"translation.y": 425.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 10,
+					"buffer": 5,
 					"file": "include/edwa_local_planner/edwa_planner.h",
 					"settings":
 					{
@@ -1133,8 +943,8 @@
 						"selection":
 						[
 							[
-								1966,
-								1966
+								7646,
+								7646
 							]
 						],
 						"settings":
@@ -1144,25 +954,25 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 361.0,
+						"translation.y": 2679.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 11,
+					"buffer": 6,
 					"file": "src/edwa_planner.cpp",
 					"settings":
 					{
-						"buffer_size": 16273,
+						"buffer_size": 16458,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								5258,
-								5258
+								2330,
+								2330
 							]
 						],
 						"settings":
@@ -1172,97 +982,41 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 1993.0,
+						"translation.y": 716.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 12,
-					"file": "/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_analysis/src/model_fitting.py",
+					"buffer": 7,
+					"file": "/home/ch/ros/sim_ws/src/navigation/global_planner/src/planner_core.cpp",
 					"settings":
 					{
-						"buffer_size": 10595,
+						"buffer_size": 16611,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								0,
-								0
+								2476,
+								2476
 							]
 						],
 						"settings":
 						{
-							"syntax": "Packages/Python/Python.tmLanguage",
+							"syntax": "Packages/C++/C++.tmLanguage",
 							"tab_size": 4,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 605.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
 				},
 				{
-					"buffer": 13,
-					"file": "/home/ch/ros/sim_ws/src/auckbot_sim/auckbot_analysis/src/nav_analysis.cpp",
-					"settings":
-					{
-						"buffer_size": 13028,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 3519.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 14,
-					"file": "include/edwa_local_planner/edwa_planner_ros.h",
-					"settings":
-					{
-						"buffer_size": 5798,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								2376,
-								2376
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/C++/C++.tmLanguage",
-							"tab_size": 2,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1598.0,
-						"zoom_level": 1.0
-					},
-					"type": "text"
-				},
-				{
-					"buffer": 15,
+					"buffer": 8,
 					"file": "src/edwa_planner_ros.cpp",
 					"settings":
 					{
@@ -1273,8 +1027,8 @@
 						"selection":
 						[
 							[
-								2235,
-								2235
+								9137,
+								9137
 							]
 						],
 						"settings":
@@ -1284,7 +1038,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 2894.0,
+						"translation.y": 3750.0,
 						"zoom_level": 1.0
 					},
 					"type": "text"
@@ -1342,11 +1096,11 @@
 	},
 	"select_project":
 	{
-		"height": 0.0,
+		"height": 500.0,
 		"selected_items":
 		[
 		],
-		"width": 0.0
+		"width": 380.0
 	},
 	"show_minimap": true,
 	"show_open_files": false,
